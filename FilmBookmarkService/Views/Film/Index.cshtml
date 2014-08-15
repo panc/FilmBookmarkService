@@ -1,0 +1,19 @@
+﻿@using FilmBookmarkService.Models
+@model List<FilmModel>
+
+@{
+    ViewBag.Title = "Your Films";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        
+        @foreach (var film in Model)
+        {
+            <p>- @film.Name</p>
+        }
+            
+    </div>
+</div>
