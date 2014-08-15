@@ -17,7 +17,7 @@
                 <div class="film-part"><span class="glyphicon glyphicon-star-empty"></span></div>
 
                 <div class="film-part">@film.Name</div>
-                
+
                 <div class="film-edit-buttons">
                     <span class="edit-button glyphicon glyphicon-pencil"></span>
                     <span class="edit-button glyphicon glyphicon-trash"></span>
@@ -28,3 +28,17 @@
 
     </div>
 </div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/fbs")
+
+    @if (Model != null)
+    {
+        <script type="text/javascript">
+            $(document).ready(function() {
+                initilizeFilmHandler({ headLine: "@ViewBag.Title" });
+            });
+        </script>
+    }
+}
