@@ -2,18 +2,29 @@
 @model List<FilmModel>
 
 @{
-    ViewBag.Title = "Your Films";
+    ViewBag.Title = "Your Films.";
 }
 
 <h2>@ViewBag.Title</h2>
 
 <div class="row">
     <div class="col-md-8">
-        
+
         @foreach (var film in Model)
         {
-            <p>- @film.Name</p>
+            <div class="film clearfix">
+
+                <div class="film-part"><span class="glyphicon glyphicon-star-empty"></span></div>
+
+                <div class="film-part">@film.Name</div>
+                
+                <div class="film-edit-buttons">
+                    <span class="edit-button glyphicon glyphicon-pencil"></span>
+                    <span class="edit-button glyphicon glyphicon-trash"></span>
+                </div>
+
+            </div>
         }
-            
+
     </div>
 </div>

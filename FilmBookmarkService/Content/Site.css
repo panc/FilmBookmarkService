@@ -22,3 +22,26 @@ select,
 textarea {
     max-width: 280px;
 }
+
+.film {
+    line-height: 30px;
+}
+
+.film > .film-edit-buttons {
+    display: none;
+}
+
+.film:hover > .film-edit-buttons {
+    display: block;
+    float: right;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.film-part {
+    margin-left: 10px;
+}
+
+.left, .film-part {
+    float: left;
+}
