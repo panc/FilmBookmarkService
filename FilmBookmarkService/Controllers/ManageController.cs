@@ -6,6 +6,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using FilmBookmarkService.Models;
+using FilmBookmarkService.Core;
 
 namespace FilmBookmarkService.Controllers
 {

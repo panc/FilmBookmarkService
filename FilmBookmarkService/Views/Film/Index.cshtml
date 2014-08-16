@@ -1,5 +1,6 @@
-﻿@using FilmBookmarkService.Models
-@model List<FilmModel>
+﻿@using FilmBookmarkService.Core
+
+@model List<Film>
 
 @{
     ViewBag.Title = "Your Films.";
@@ -16,6 +17,7 @@
 
                 <div class="film-part"><span class="glyphicon glyphicon-star-empty"></span></div>
 
+                <div class="film-part">@film.Id</div>
                 <div class="film-part">@film.Name</div>
 
                 <div class="film-edit-buttons">

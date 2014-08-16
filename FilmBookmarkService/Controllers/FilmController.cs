@@ -1,22 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Web;
 using System.Web.Mvc;
-using FilmBookmarkService.Models;
-using WebGrease;
+using FilmBookmarkService.Core;
+using Microsoft.AspNet.Identity.Owin;
 
 namespace FilmBookmarkService.Controllers
 {
     public class FilmController : Controller
     {
+        private readonly ApplicationDbContext _dbContext;
+
+        public FilmController()
+        {
+            _dbContext = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+        }
+
         public ActionResult Index()
         {
-            var films = new List<FilmModel>
-            {
-                new FilmModel { Name = "Hugo" },
-                new FilmModel { Name = "Sep" },
-                new FilmModel { Name = "Ich" }
-            };
-
-            return View(films);
+            return View(_dbContext.Films.ToList());
         }
     }
 }
