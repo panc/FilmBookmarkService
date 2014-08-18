@@ -19,6 +19,7 @@
 
                 <div class="film-part">@film.Id</div>
                 <div class="film-part">@film.Name</div>
+                <div class="film-part">@film.Link</div>
 
                 <div class="film-edit-buttons">
                     <span class="edit-button glyphicon glyphicon-pencil"></span>
@@ -31,12 +32,12 @@
         <div class="add-film">
             <h4>Add new film:</h4>
             <div class="clearfix">
-                <input id="newFilmName" class="film-part form-control width-m" type="text" name="name" placeholder="Name" />
-                <input id="newLink" class="film-part form-control width-m" type="text" name="name" placeholder="Link" />
-                <input id="newSeason" class="film-part form-control width-s" type="text" name="name" placeholder="Season" />
-                <input id="newEpisode" class="film-part form-control width-s" type="text" name="name" placeholder="Episode" />
+                <input id="new-film-name" class="film-part form-control width-m" type="text" name="name" placeholder="Name" />
+                <input id="new-link" class="film-part form-control width-m" type="text" name="name" placeholder="Link" />
+                <input id="new-season" class="film-part form-control width-s" type="text" name="name" placeholder="Season" />
+                <input id="new-episode" class="film-part form-control width-s" type="text" name="name" placeholder="Episode" />
                 
-                <p><a id="addFilm" class="film-part btn btn-default" href="#"><span class="edit-button glyphicon glyphicon-plus"></span><span> Add</span></a></p>
+                <p><a id="add-button" class="film-part btn btn-default" href="#"><span class="glyphicon glyphicon-plus"></span><span> Add</span></a></p>
             </div>
         </div>
     </div>
@@ -51,7 +52,9 @@
         <script type="text/javascript">
             $(document).ready(function() {
                 initilizeFilmHandler({
-                    addFilmUrl: "@Url.Action("AddFilm")"
+                    addFilmUrl: "@Url.Action("AddFilm")",
+                    editFilmUrl: "@Url.Action("EditFilm")",
+                    removeFilmUrl: "@Url.Action("RemoveFilm")"
                 });
             });
         </script>

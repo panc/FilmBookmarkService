@@ -25,8 +25,6 @@ namespace FilmBookmarkService.Controllers
 
         public async Task<ActionResult> Index()
         {
-            //AddFilm("Castl", "http://kinox.to/Stream/Castle.html");
-
             var list = await DbContext.Films.ToListAsync();
             return View(list);
         }
@@ -47,6 +45,21 @@ namespace FilmBookmarkService.Controllers
             return _Success();
         }
 
+        [HttpPost]
+        public async Task<ActionResult> EditFilm([Bind]Film film)
+        {
+            var parser = await WebsiteParsingHelper.GetParser(film.Link);
+            if (parser == null)
+                return _Failure("No parser found for {0}!", film.Link);
+
+            film.SetParser(parser);
+            
+            DbContext.Entry(film).State = EntityState.Modified;
+            await DbContext.SaveChangesAsync();
+
+            return _Success();
+        }
+        
         [HttpPost]
         public async Task<ActionResult> RemoveFilm(int id)
         {
