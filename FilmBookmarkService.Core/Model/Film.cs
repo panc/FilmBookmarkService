@@ -14,11 +14,7 @@ namespace FilmBookmarkService.Core
         
         public string Name { get; set; }
         
-        public string Link { get; set; }
-
-        public string LinkIdPart { get; set; }
-        
-        public string Stream { get; set; }
+        public string Url { get; set; }
         
         public int Season { get; set; }
         

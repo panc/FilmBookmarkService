@@ -42,6 +42,10 @@ textarea {
     margin-left: 10px;
 }
 
+.add-film {
+    margin-top: 60px;
+}
+
 .left, .film-part {
     float: left;
 }

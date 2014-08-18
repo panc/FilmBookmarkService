@@ -9,7 +9,7 @@
 <h2>@ViewBag.Title</h2>
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8">
 
         @foreach (var film in Model)
         {
@@ -19,7 +19,7 @@
 
                 <div class="film-part">@film.Id</div>
                 <div class="film-part">@film.Name</div>
-                <div class="film-part">@film.Link</div>
+                <div class="film-part">@film.Url</div>
 
                 <div class="film-edit-buttons">
                     <span class="edit-button glyphicon glyphicon-pencil"></span>
@@ -54,7 +54,8 @@
                 initilizeFilmHandler({
                     addFilmUrl: "@Url.Action("AddFilm")",
                     editFilmUrl: "@Url.Action("EditFilm")",
-                    removeFilmUrl: "@Url.Action("RemoveFilm")"
+                    removeFilmUrl: "@Url.Action("RemoveFilm")",
+                    getStreamUrl: "@Url.Action("GetStream")"
                 });
             });
         </script>

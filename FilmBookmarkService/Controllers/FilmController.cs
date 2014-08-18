@@ -29,13 +29,22 @@ namespace FilmBookmarkService.Controllers
             return View(list);
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetStream(int id)
+        {
+            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+            var streamUrl = await film.Parser.GetNextStreamUrl(film.Url, film.Season, film.Episode);
+
+            return Json(new { success = true, streamUrl = streamUrl }, JsonRequestBehavior.AllowGet);
+        }
+
         [HttpPost]
         public async Task<ActionResult> AddFilm(Film film)
         {      
-            var parser = await WebsiteParsingHelper.GetParser(film.Link);
+            var parser = await WebsiteParsingHelper.GetParser(film.Url);
 
             if (parser == null)
-                return _Failure("No parser found for {0}!", film.Link);
+                return _Failure("No parser found for {0}!", film.Url);
 
             film.SetParser(parser);
 
@@ -48,9 +57,9 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> EditFilm([Bind]Film film)
         {
-            var parser = await WebsiteParsingHelper.GetParser(film.Link);
+            var parser = await WebsiteParsingHelper.GetParser(film.Url);
             if (parser == null)
-                return _Failure("No parser found for {0}!", film.Link);
+                return _Failure("No parser found for {0}!", film.Url);
 
             film.SetParser(parser);
             
