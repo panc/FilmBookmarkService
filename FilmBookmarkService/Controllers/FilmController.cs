@@ -32,22 +32,42 @@ namespace FilmBookmarkService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddFilm(string name, string link)
-        {           
-            var film = new Film
-            {
-                Name = name,
-                Season = 1,
-                Episode = 1
-            };
+        public async Task<ActionResult> AddFilm(Film film)
+        {      
+            var parser = await WebsiteParsingHelper.GetParser(film.Link);
 
-            var parser = await WebsiteParsingHelper.GetParser(link);
+            if (parser == null)
+                return _Failure("No parser found for {0}!", film.Link);
+
             film.SetParser(parser);
 
             DbContext.Films.Add(film);
             await DbContext.SaveChangesAsync();
 
+            return _Success();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> RemoveFilm(int id)
+        {
+            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+            if (film == null)
+                return _Failure("Film with id {0} not found!", id);
+
+            DbContext.Films.Remove(film);
+            await DbContext.SaveChangesAsync();
+
+            return _Success();
+        }
+
+        private ActionResult _Success()
+        {
             return Json(new { success = true });
+        }
+
+        private ActionResult _Failure(string message, params object[] parameter)
+        {
+            return Json(new { success = false, message = string.Format(message, parameter) });
         }
     }
 }

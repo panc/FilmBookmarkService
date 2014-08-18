@@ -45,3 +45,11 @@ textarea {
 .left, .film-part {
     float: left;
 }
+
+.width-m {
+    width: 200px;
+}
+
+.width-s {
+    width: 80px;
+}

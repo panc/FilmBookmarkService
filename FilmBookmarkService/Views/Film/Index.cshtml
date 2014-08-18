@@ -9,11 +9,11 @@
 <h2>@ViewBag.Title</h2>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-12">
 
         @foreach (var film in Model)
         {
-            <div class="film clearfix">
+            <div class="film clearfix" id="@film.Id">
 
                 <div class="film-part"><span class="glyphicon glyphicon-star-empty"></span></div>
 
@@ -22,12 +22,23 @@
 
                 <div class="film-edit-buttons">
                     <span class="edit-button glyphicon glyphicon-pencil"></span>
-                    <span class="edit-button glyphicon glyphicon-trash"></span>
+                    <span class="remove-button glyphicon glyphicon-trash"></span>
                 </div>
 
             </div>
         }
-
+        
+        <div class="add-film">
+            <h4>Add new film:</h4>
+            <div class="clearfix">
+                <input id="newFilmName" class="film-part form-control width-m" type="text" name="name" placeholder="Name" />
+                <input id="newLink" class="film-part form-control width-m" type="text" name="name" placeholder="Link" />
+                <input id="newSeason" class="film-part form-control width-s" type="text" name="name" placeholder="Season" />
+                <input id="newEpisode" class="film-part form-control width-s" type="text" name="name" placeholder="Episode" />
+                
+                <p><a id="addFilm" class="film-part btn btn-default" href="#"><span class="edit-button glyphicon glyphicon-plus"></span><span> Add</span></a></p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -39,7 +50,9 @@
     {
         <script type="text/javascript">
             $(document).ready(function() {
-                initilizeFilmHandler({ headLine: "@ViewBag.Title" });
+                initilizeFilmHandler({
+                    addFilmUrl: "@Url.Action("AddFilm")"
+                });
             });
         </script>
     }
