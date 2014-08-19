@@ -33,9 +33,46 @@ namespace FilmBookmarkService.Controllers
         public async Task<ActionResult> GetStream(int id)
         {
             var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
-            //var streamUrl = await film.Parser.GetNextStreamUrl(film.Url, film.Season, film.Episode);
-            var streamUrl = "http://google.com/todo";
-            return Json(new { success = true, streamUrl = streamUrl }, JsonRequestBehavior.AllowGet);
+            var streamUrl = await film.Parser.GetNextStreamUrl(film.Url, film.Season, film.Episode);
+            
+            return Json(new
+            {
+                success = true, 
+                streamUrl = streamUrl,
+                season = film.Season,
+                episode = film.Episode
+            }, 
+            JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> NextEpisode(int id)
+        {
+            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+            film.Episode++; // todo
+            DbContext.SaveChanges();
+
+            return Json(new
+            {
+                success = true,
+                season = film.Season,
+                episode = film.Episode
+            });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PrevEpisode(int id)
+        {
+            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+            film.Episode--; // todo
+            DbContext.SaveChanges();
+
+            return Json(new
+            {
+                success = true,
+                season = film.Season,
+                episode = film.Episode
+            });
         }
 
         [HttpPost]

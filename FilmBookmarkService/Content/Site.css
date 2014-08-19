@@ -27,7 +27,7 @@ textarea {
     line-height: 30px;
 }
 
-.edit-button {
+div.button {
     cursor: pointer;
 }
 
