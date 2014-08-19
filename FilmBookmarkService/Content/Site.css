@@ -27,26 +27,27 @@ textarea {
     line-height: 30px;
 }
 
-.film > .film-edit-buttons {
-    display: none;
-}
-
-.film:hover > .film-edit-buttons {
-    display: block;
-    float: right;
-    margin-right: 5px;
+.edit-button {
     cursor: pointer;
 }
 
 .film-part {
+    margin-left: 20px;
+}
+
+.btn.film-part {
     margin-left: 10px;
+}
+
+.film-part-edit {
+    margin-left: 5px;
 }
 
 .add-film {
     margin-top: 60px;
 }
 
-.left, .film-part {
+.left, .film-part, .film-part-edit {
     float: left;
 }
 

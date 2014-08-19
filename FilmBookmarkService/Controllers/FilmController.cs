@@ -33,8 +33,8 @@ namespace FilmBookmarkService.Controllers
         public async Task<ActionResult> GetStream(int id)
         {
             var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
-            var streamUrl = await film.Parser.GetNextStreamUrl(film.Url, film.Season, film.Episode);
-
+            //var streamUrl = await film.Parser.GetNextStreamUrl(film.Url, film.Season, film.Episode);
+            var streamUrl = "http://google.com/todo";
             return Json(new { success = true, streamUrl = streamUrl }, JsonRequestBehavior.AllowGet);
         }
 
