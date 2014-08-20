@@ -29,50 +29,84 @@ namespace FilmBookmarkService.Controllers
             return View(list);
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<ActionResult> GetStream(int id)
         {
-            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
-            var streamUrl = await film.Parser.GetNextStreamUrl(film.Url, film.Season, film.Episode);
-            
-            return Json(new
+            try
             {
-                success = true, 
-                streamUrl = streamUrl,
-                season = film.Season,
-                episode = film.Episode
-            }, 
-            JsonRequestBehavior.AllowGet);
+                var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+                var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
+
+                return Json(new
+                {
+                    success = true,
+                    streamUrl = streamUrl,
+                    season = film.Season,
+                    episode = film.Episode
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult> NextEpisode(int id)
         {
-            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
-            film.Episode++; // todo
-            DbContext.SaveChanges();
-
-            return Json(new
+            try
             {
-                success = true,
-                season = film.Season,
-                episode = film.Episode
-            });
+                var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+                var result = await film.Parser.GetNextEpisode(film.Url, film.Season, film.Episode);
+
+                if (result == null)
+                    return _Failure("No more episodes available!");
+
+                film.Season = result.Season;
+                film.Episode = result.Episode;
+                DbContext.SaveChanges();
+
+                return Json(new
+                {
+                    success = true,
+                    streamUrl = result.StreamUrl,
+                    season = result.Season,
+                    episode = result.Episode
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult> PrevEpisode(int id)
         {
-            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
-            film.Episode--; // todo
-            DbContext.SaveChanges();
-
-            return Json(new
+            try
             {
-                success = true,
-                season = film.Season,
-                episode = film.Episode
-            });
+                var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+                var result = await film.Parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
+
+                if (result == null)
+                    return _Failure("No more episodes available!"); 
+                
+                film.Season = result.Season;
+                film.Episode = result.Episode;
+                DbContext.SaveChanges();
+
+                return Json(new
+                {
+                    success = true,
+                    streamUrl = result.StreamUrl,
+                    season = result.Season,
+                    episode = result.Episode
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
         }
 
         [HttpPost]
