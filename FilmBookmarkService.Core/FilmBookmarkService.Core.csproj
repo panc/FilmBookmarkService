@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbContext\ApplicationDbContext.cs" />
+    <Compile Include="DbContext\DataStore.cs" />
     <Compile Include="Model\ApplicationUser.cs" />
     <Compile Include="Model\Film.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

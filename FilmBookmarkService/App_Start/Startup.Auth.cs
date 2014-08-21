@@ -14,8 +14,11 @@ namespace FilmBookmarkService
         // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
         public void ConfigureAuth(IAppBuilder app)
         {
+            var appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString(); ;
+
             // Configure the db context, user manager and signin manager to use a single instance per request
             Database.SetInitializer(new DropCreateDatabaseIfModelChanges<ApplicationDbContext>());
+            app.CreatePerOwinContext(() => DataStore.Create(appDataPath));
             app.CreatePerOwinContext(ApplicationDbContext.Create);
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
             app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);

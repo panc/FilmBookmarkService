@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -11,11 +12,15 @@ namespace FilmBookmarkService.Controllers
     public class FilmController : Controller
     {
         private readonly Lazy<ApplicationDbContext> _dbContext;
+        private readonly Lazy<DataStore> _dataStore;
 
         public FilmController()
         {
             _dbContext = new Lazy<ApplicationDbContext>(
                 () => HttpContext.GetOwinContext().Get<ApplicationDbContext>());
+
+            _dataStore = new Lazy<DataStore>(
+               () => HttpContext.GetOwinContext().Get<DataStore>());
         }
 
         private ApplicationDbContext DbContext
@@ -23,10 +28,16 @@ namespace FilmBookmarkService.Controllers
             get { return _dbContext.Value; }
         }
 
+        private DataStore DataStore
+        {
+            get { return _dataStore.Value; }
+        }
+
         public async Task<ActionResult> Index()
         {
             var list = await DbContext.Films.ToListAsync();
-            return View(list);
+            var l = DataStore.Films.ToList();
+            return View(l);
         }
 
         [HttpPost]
@@ -119,23 +130,27 @@ namespace FilmBookmarkService.Controllers
 
             film.SetParser(parser);
 
-            DbContext.Films.Add(film);
-            await DbContext.SaveChangesAsync();
+            DataStore.AddFilm(film);
+            await DataStore.SaveChangesAsync();
 
             return _Success();
         }
 
         [HttpPost]
-        public async Task<ActionResult> EditFilm([Bind]Film film)
+        public async Task<ActionResult> EditFilm(int id, Film updatedFilm)
         {
+            var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+
+            if (film == null)
+                return _Failure("Film with id {0} not found!", id);
+
             var parser = await WebsiteParsingHelper.GetParser(film.Url);
             if (parser == null)
                 return _Failure("No parser found for {0}!", film.Url);
 
             film.SetParser(parser);
-            
-            DbContext.Entry(film).State = EntityState.Modified;
-            await DbContext.SaveChangesAsync();
+                        
+            await DataStore.SaveChangesAsync();
 
             return _Success();
         }
@@ -143,12 +158,12 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> RemoveFilm(int id)
         {
-            var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+            var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
 
-            DbContext.Films.Remove(film);
-            await DbContext.SaveChangesAsync();
+            DataStore.RemoveFilm(film);
+            await DataStore.SaveChangesAsync();
 
             return _Success();
         }
