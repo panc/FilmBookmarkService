@@ -134,11 +134,15 @@ namespace FilmBookmarkService.Controllers
             if (parser == null)
                 return _Failure("No parser found for {0}!", film.Url);
 
+            film.Name = updatedFilm.Name;
+            film.Url = updatedFilm.Url;
+            film.Season = updatedFilm.Season;
+            film.Episode = updatedFilm.Episode;
             film.SetParser(parser);
                         
             await DataStore.SaveChangesAsync();
 
-            return await _GetStream(film);
+            return _Success();
         }
         
         [HttpPost]
