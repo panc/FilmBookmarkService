@@ -10,7 +10,6 @@ namespace FilmBookmarkService.Controllers
 {
     public class FilmController : Controller
     {
-        private readonly Lazy<ApplicationDbContext> _dbContext;
         private readonly Lazy<DataStore> _dataStore;
 
         public FilmController()

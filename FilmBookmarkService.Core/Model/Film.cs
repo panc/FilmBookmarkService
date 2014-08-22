@@ -1,5 +1,5 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace FilmBookmarkService.Core
 {
@@ -7,9 +7,6 @@ namespace FilmBookmarkService.Core
     {
         private IWebsiteParser _parser;
 
-        // http://www.asp.net/mvc/tutorials/getting-started-with-ef-using-mvc/creating-an-entity-framework-data-model-for-an-asp-net-mvc-application
-
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         
         public string Name { get; set; }
@@ -22,6 +19,7 @@ namespace FilmBookmarkService.Core
         
         public string ParserType { get; set; }
 
+        [JsonIgnore]
         public IWebsiteParser Parser
         {
             get
