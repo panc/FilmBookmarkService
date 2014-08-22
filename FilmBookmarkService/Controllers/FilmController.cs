@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -16,16 +15,8 @@ namespace FilmBookmarkService.Controllers
 
         public FilmController()
         {
-            _dbContext = new Lazy<ApplicationDbContext>(
-                () => HttpContext.GetOwinContext().Get<ApplicationDbContext>());
-
             _dataStore = new Lazy<DataStore>(
                () => HttpContext.GetOwinContext().Get<DataStore>());
-        }
-
-        private ApplicationDbContext DbContext
-        {
-            get { return _dbContext.Value; }
         }
 
         private DataStore DataStore
@@ -35,31 +26,19 @@ namespace FilmBookmarkService.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var list = await DbContext.Films.ToListAsync();
-            var l = DataStore.Films.ToList();
-            return View(l);
+            var list = DataStore.Films.ToList();
+            return View(list);
         }
 
         [HttpPost]
         public async Task<ActionResult> GetStream(int id)
         {
-            try
-            {
-                var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
-                var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
+            var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
 
-                return Json(new
-                {
-                    success = true,
-                    streamUrl = streamUrl,
-                    season = film.Season,
-                    episode = film.Episode
-                });
-            }
-            catch (Exception ex)
-            {
-                return _Failure(ex.Message);
-            }
+            if (film == null)
+                return _Failure("Film with id {0} not found!", id);
+
+            return await _GetStream(film);
         }
 
         [HttpPost]
@@ -67,7 +46,11 @@ namespace FilmBookmarkService.Controllers
         {
             try
             {
-                var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+                var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+                
                 var result = await film.Parser.GetNextEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
@@ -75,7 +58,7 @@ namespace FilmBookmarkService.Controllers
 
                 film.Season = result.Season;
                 film.Episode = result.Episode;
-                DbContext.SaveChanges();
+                await DataStore.SaveChangesAsync();
 
                 return Json(new
                 {
@@ -96,7 +79,11 @@ namespace FilmBookmarkService.Controllers
         {
             try
             {
-                var film = await DbContext.Films.SingleOrDefaultAsync(x => x.Id == id);
+                var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+                
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+                
                 var result = await film.Parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
@@ -104,7 +91,7 @@ namespace FilmBookmarkService.Controllers
                 
                 film.Season = result.Season;
                 film.Episode = result.Episode;
-                DbContext.SaveChanges();
+                await DataStore.SaveChangesAsync();
 
                 return Json(new
                 {
@@ -152,7 +139,7 @@ namespace FilmBookmarkService.Controllers
                         
             await DataStore.SaveChangesAsync();
 
-            return _Success();
+            return await _GetStream(film);
         }
         
         [HttpPost]
@@ -168,6 +155,26 @@ namespace FilmBookmarkService.Controllers
             return _Success();
         }
 
+        private async Task<ActionResult> _GetStream(Film film)
+        {
+            try
+            {
+                var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
+
+                return Json(new
+                {
+                    success = true,
+                    streamUrl = streamUrl,
+                    season = film.Season,
+                    episode = film.Episode
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
+        }
+        
         private ActionResult _Success()
         {
             return Json(new { success = true });
