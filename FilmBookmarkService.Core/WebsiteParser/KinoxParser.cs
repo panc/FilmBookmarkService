@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -23,13 +22,7 @@ namespace FilmBookmarkService.Core
 
         public async Task<string> GetStreamUrl(string filmUrl, int season, int episode)
         {
-            var mirror = await _GetMirror(filmUrl, season, episode, HOSTER_STREAMCLOUD);
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(mirror.Stream);
-            var node = doc.DocumentNode.SelectSingleNode("//a[@href]");
-
-            return node.Attributes["href"].Value;
+            return await _GetMirror(filmUrl, season, episode, HOSTER_STREAMCLOUD);
         }
 
         public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)
@@ -50,7 +43,7 @@ namespace FilmBookmarkService.Core
                     return null;
             }
 
-            return new GetEpisodeResult(season, episode, mirror.Stream);
+            return new GetEpisodeResult(season, episode, mirror);
         }
 
         public async Task<GetEpisodeResult> GetPrevEpisode(string filmUrl, int season, int episode)
@@ -65,27 +58,29 @@ namespace FilmBookmarkService.Core
             if (mirror == null)
                 return null;
             
-            return new GetEpisodeResult(season, episode, mirror.Stream);
+            return new GetEpisodeResult(season, episode, mirror);
         }
 
-        private async Task<KinoxMirrorDto> _GetMirror(string filmUrl, int season, int episode, string hoster)
+        private async Task<string> _GetMirror(string filmUrl, int season, int episode, string hoster)
         {
             var filmId = _ParseUrlForFilmId(filmUrl);
             var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode);
-
-//            var handler = new HttpClientHandler
-//            {
-//                UseDefaultCredentials = false,
-//                Proxy = new WebProxy("ap-proxy", 8080) { Credentials = new NetworkCredential("", "") },
-//                UseProxy = true,
-//            };
-
+            
             var client = new HttpClient();
             var response = await client.GetAsync(new Uri(url));
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<KinoxMirrorDto>(content);
+            var mirror = JsonConvert.DeserializeObject<KinoxMirrorDto>(content);
+
+            if (mirror == null)
+                return null;
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(mirror.Stream);
+            var node = doc.DocumentNode.SelectSingleNode("//a[@href]");
+
+            return node.Attributes["href"].Value;
         }
 
         private string _ParseUrlForFilmId(string url)
