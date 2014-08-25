@@ -1,6 +1,14 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Configuration;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Web;
+using System.Web.Mvc;
 using System.Web.Security;
 using FilmBookmarkService.Models;
+using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security;
 
 namespace FilmBookmarkService.Controllers
 {
@@ -15,11 +23,14 @@ namespace FilmBookmarkService.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model)
         {
-            // var password = FormsAuthentication.HashPasswordForStoringInConfigFile("christoph.pangerl", "SHA1");
-
-            if (ModelState.IsValid && FormsAuthentication.Authenticate(model.UserName, model.Password))
+            if (ModelState.IsValid && _Authenticate(model.UserName, model.Password))
             {
-                FormsAuthentication.SetAuthCookie(model.UserName, true);
+                var identity = new ClaimsIdentity(DefaultAuthenticationTypes.ApplicationCookie);
+                identity.AddClaim(new Claim(ClaimTypes.Name, model.UserName));
+
+                var authentication = HttpContext.GetOwinContext().Authentication;
+                authentication.SignIn(new AuthenticationProperties(), identity);
+
                 return new RedirectResult("~/");
             }
 
@@ -27,9 +38,26 @@ namespace FilmBookmarkService.Controllers
             return View(model);
         }
 
+        private bool _Authenticate(string userName, string password)
+        {
+            var user = ConfigurationManager.AppSettings["username"];
+            var pwd = ConfigurationManager.AppSettings["password"];
+
+            return userName == user && pwd == _Hash(password);
+        }
+
+        private string _Hash(string password)
+        {
+            using (var sha1 = new SHA512Managed())
+            {
+                var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Logout()
+        public ActionResult LogOff()
         {
             FormsAuthentication.SignOut();
             return new RedirectResult("~/");
