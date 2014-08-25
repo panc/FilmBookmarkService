@@ -24,7 +24,11 @@ textarea {
 }
 
 .film {
-    line-height: 30px;
+    line-height: 40px;
+}
+
+.film:hover {
+    background-color: #f1f1f1;
 }
 
 div.button {
@@ -57,4 +61,16 @@ div.button {
 
 .width-s {
     width: 80px;
+}
+
+.film-view .url {
+    width: 200px;
+}
+
+.film-view .id {
+    width: 20px;
+}
+
+.film-view .stream {
+    width: 190px;
 }
