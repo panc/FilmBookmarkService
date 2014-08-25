@@ -8,6 +8,7 @@ using Microsoft.AspNet.Identity.Owin;
 
 namespace FilmBookmarkService.Controllers
 {
+    [Authorize]
     public class FilmController : Controller
     {
         private readonly Lazy<DataStore> _dataStore;
