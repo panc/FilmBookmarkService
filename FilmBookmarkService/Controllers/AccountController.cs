@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
 using FilmBookmarkService.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -14,6 +13,11 @@ namespace FilmBookmarkService.Controllers
 {
     public class AccountController : Controller
     {
+        private IAuthenticationManager Authentication
+        {
+            get { return HttpContext.GetOwinContext().Authentication; }
+        }
+
         public ActionResult Login()
         {
             return View();
@@ -28,8 +32,7 @@ namespace FilmBookmarkService.Controllers
                 var identity = new ClaimsIdentity(DefaultAuthenticationTypes.ApplicationCookie);
                 identity.AddClaim(new Claim(ClaimTypes.Name, model.UserName));
 
-                var authentication = HttpContext.GetOwinContext().Authentication;
-                authentication.SignIn(new AuthenticationProperties(), identity);
+                Authentication.SignIn(new AuthenticationProperties(), identity);
 
                 return new RedirectResult("~/");
             }
@@ -48,9 +51,9 @@ namespace FilmBookmarkService.Controllers
 
         private string _Hash(string password)
         {
-            using (var sha1 = new SHA512Managed())
+            using (var sha = new SHA512Managed())
             {
-                var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
                 return Convert.ToBase64String(hash);
             }
         }
@@ -59,7 +62,7 @@ namespace FilmBookmarkService.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
-            FormsAuthentication.SignOut();
+            Authentication.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return new RedirectResult("~/");
         }
     }
