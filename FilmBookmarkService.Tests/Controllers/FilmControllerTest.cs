@@ -8,13 +8,13 @@ namespace FilmBookmarkService.Tests.Controllers
     public class FilmControllerTest
     {
         [TestMethod]
-        public async void Index()
+        public void Index()
         {
             // Arrange
             var controller = new FilmController();
 
             // Act
-            var result = await controller.Index() as ViewResult;
+            var result = controller.Index() as ViewResult;
 
             // Assert
             Assert.IsNotNull(result);
