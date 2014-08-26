@@ -76,7 +76,8 @@ div.button {
 }
 
 .film-view .indicator {
-    width: 30px;
+    margin-top: 6px;
+    width: 10px;
     height: 30px;
-    background-color: #ff00ff;
+    background-color: #88df64;
 }
