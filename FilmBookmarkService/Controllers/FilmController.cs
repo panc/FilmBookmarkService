@@ -24,7 +24,7 @@ namespace FilmBookmarkService.Controllers
             get { return _dataStore.Value; }
         }
 
-        public async Task<ActionResult> Index()
+        public ActionResult Index()
         {
             var list = DataStore.Films.ToList();
             return View(list);
@@ -87,7 +87,7 @@ namespace FilmBookmarkService.Controllers
                 var result = await film.Parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
-                    return _Failure("No more episodes available!"); 
+                    return _Failure("No more episodes for the configured streaming service available!"); 
                 
                 film.Season = result.Season;
                 film.Episode = result.Episode;
@@ -100,6 +100,28 @@ namespace FilmBookmarkService.Controllers
                     season = result.Season,
                     episode = result.Episode
                 });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> IsAnotherEpisodeAvailable(int id)
+        {
+            try
+            {
+                var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+
+                var isAnotherEpisodeAvailable = await film.Parser.IsAnotherEpisodeAvailable(film.Url, film.Season, film.Episode);
+
+                return isAnotherEpisodeAvailable
+                    ? _Success()
+                    : _Failure("");
             }
             catch (Exception ex)
             {

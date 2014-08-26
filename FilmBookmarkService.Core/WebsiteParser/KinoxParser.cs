@@ -61,6 +61,19 @@ namespace FilmBookmarkService.Core
             return new GetEpisodeResult(season, episode, mirror);
         }
 
+        public async Task<bool> IsAnotherEpisodeAvailable(string filmUrl, int season, int episode)
+        {
+            // todo
+            // check real episodes
+
+            var mirror = await _GetMirror(filmUrl, season, episode + 1, HOSTER_STREAMCLOUD);
+
+            if (mirror == null)
+                mirror = await _GetMirror(filmUrl, season + 1, 1, HOSTER_STREAMCLOUD);
+
+            return mirror != null;
+        }
+
         private async Task<string> _GetMirror(string filmUrl, int season, int episode, string hoster)
         {
             var filmId = _ParseUrlForFilmId(filmUrl);
