@@ -26,7 +26,7 @@ namespace FilmBookmarkService.Controllers
 
         public ActionResult Index()
         {
-            var list = DataStore.Films.ToList();
+            var list = DataStore.Films.OrderBy(x => x.SortIndex).ToList();
             return View(list);
         }
 
@@ -163,6 +163,22 @@ namespace FilmBookmarkService.Controllers
             film.Episode = updatedFilm.Episode;
             film.SetParser(parser);
                         
+            await DataStore.SaveChangesAsync();
+
+            return _Success();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> UpdateSortOrder(string[] ids)
+        {
+            var sortedIds = ids.ToList();
+
+            foreach (var film in DataStore.Films)
+            {
+                var index = sortedIds.IndexOf(film.Id.ToString());
+                film.SortIndex = index + 1;
+            }
+
             await DataStore.SaveChangesAsync();
 
             return _Success();

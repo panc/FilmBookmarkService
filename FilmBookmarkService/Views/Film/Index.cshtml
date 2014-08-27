@@ -10,35 +10,37 @@
 
 <div class="row">
     <div class="col-md-10">
+        
+        <div class="films">
+            @foreach (var film in Model)
+            {
+                <div class="film clearfix" id="@film.Id">
 
-        @foreach (var film in Model)
-        {
-            <div class="film clearfix" id="@film.Id">
+                    <div class="film-view">
+                        <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
 
-                <div class="film-view">
-                    <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
+                        <div class="film-part id">@film.Id</div>
+                        <div class="film-part url"><a href="@film.Url" target="_blank">@film.Name</a></div>
 
-                    <div class="film-part id">@film.Id</div>
-                    <div class="film-part url"><a href="@film.Url" target="_blank">@film.Name</a></div>
+                        <div class="film-part button prev-episode-button"><span class="glyphicon glyphicon-chevron-left"></span></div>
+                        <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif" /></div>
+                        <div class="film-part button next-episode-button"><span class="glyphicon glyphicon-chevron-right"></span></div>
+                        <div class="film-part indicator" style="display: none"></div>
+                    </div>
 
-                    <div class="film-part button prev-episode-button"><span class="glyphicon glyphicon-chevron-left"></span></div>
-                    <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif"/></div>
-                    <div class="film-part button next-episode-button"><span class="glyphicon glyphicon-chevron-right"></span></div>
-                    <div class="film-part indicator" style="display: none"></div>
+                    <div class="film-editor" style="display: none">
+                        <input class="edit-film-name film-part-edit form-control width-m" type="text" name="name" placeholder="Name" value="@film.Name" />
+                        <input class="edit-url film-part-edit form-control width-m" type="text" name="name" placeholder="Url" value="@film.Url" />
+                        <input class="edit-season film-part-edit form-control width-s" type="text" name="name" placeholder="Season" value="@film.Season" />
+                        <input class="edit-episode film-part-edit form-control width-s" type="text" name="name" placeholder="Episode" value="@film.Episode" />
+
+                        <a class="film-part btn btn-success save-button" href="#"><span class="glyphicon glyphicon-floppy-disk"></span><span> Save</span></a>
+                        <a class="film-part btn btn-danger remove-button" href="#"><span class="glyphicon glyphicon-trash"></span><span> Remove</span></a>
+                        <a class="film-part cancel-button" href="#">Cancel</a>
+                    </div>
                 </div>
-
-                <div class="film-editor" style="display: none">
-                    <input class="edit-film-name film-part-edit form-control width-m" type="text" name="name" placeholder="Name" value="@film.Name" />
-                    <input class="edit-url film-part-edit form-control width-m" type="text" name="name" placeholder="Url" value="@film.Url" />
-                    <input class="edit-season film-part-edit form-control width-s" type="text" name="name" placeholder="Season" value="@film.Season" />
-                    <input class="edit-episode film-part-edit form-control width-s" type="text" name="name" placeholder="Episode" value="@film.Episode" />
-
-                    <a class="film-part btn btn-success save-button" href="#"><span class="glyphicon glyphicon-floppy-disk"></span><span> Save</span></a>
-                    <a class="film-part btn btn-danger remove-button" href="#"><span class="glyphicon glyphicon-trash"></span><span> Remove</span></a>
-                    <a class="film-part cancel-button" href="#">Cancel</a>
-                </div>
-            </div>
-        }
+            }
+        </div>
 
         <div class="add-film">
             <h4>Add new film:</h4>
@@ -69,7 +71,8 @@
                     getStreamUrl: "@Url.Action("GetStream")",
                     nextEpisodeUrl: "@Url.Action("NextEpisode")",
                     prevEpisodeUrl: "@Url.Action("PrevEpisode")",
-                    isAnotherEpisodeAvailableUrl: "@Url.Action("IsAnotherEpisodeAvailable")"
+                    isAnotherEpisodeAvailableUrl: "@Url.Action("IsAnotherEpisodeAvailable")",
+                    updateSortOrderUrl: "@Url.Action("UpdateSortOrder")"
                 });
             });
         </script>

@@ -23,6 +23,8 @@ textarea {
     max-width: 280px;
 }
 
+.ui-state-highlight { height: 40px; line-height: 40px; }
+
 .film {
     line-height: 40px;
 }
