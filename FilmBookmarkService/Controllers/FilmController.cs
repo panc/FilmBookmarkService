@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -169,9 +170,9 @@ namespace FilmBookmarkService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> UpdateSortOrder(string[] ids)
+        public async Task<ActionResult> UpdateSortOrder(string[] positions)
         {
-            var sortedIds = ids.ToList();
+            var sortedIds = positions.ToList();
 
             foreach (var film in DataStore.Films)
             {
