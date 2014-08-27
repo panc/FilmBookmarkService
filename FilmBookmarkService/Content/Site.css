@@ -83,3 +83,23 @@ div.button {
     height: 30px;
     background-color: #88df64;
 }
+
+.film-view .sort {
+    cursor: move;
+    margin-left: 3px;
+    margin-top: 4px;float: left;
+    min-width: 5px;
+    min-height: 1px;
+}
+
+.film-view .sort img {
+    display: none;
+}
+
+.film:hover > .film-view .sort img {
+    display: block;
+}
+
+.film:hover > .film-view .sort-empty {
+    display: none;
+}
