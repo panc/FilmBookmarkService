@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Web.Helpers;
 using FilmBookmarkService.Core;
 using Microsoft.AspNet.Identity;
@@ -13,10 +12,7 @@ namespace FilmBookmarkService
     {
         public void ConfigureAuth(IAppBuilder app)
         {
-            var appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString(); ;
-
             // Configure the datastore to use a single instance per request
-            app.CreatePerOwinContext(() => FilmStore.Create(appDataPath));
             app.CreatePerOwinContext(UserStore.Create);
 
             // Enable the application to use a cookie to store information for the signed in user

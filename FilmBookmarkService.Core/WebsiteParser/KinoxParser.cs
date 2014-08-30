@@ -13,11 +13,15 @@ namespace FilmBookmarkService.Core
 
         private const string HOSTER_STREAMCLOUD = "30";
         private const string GET_MIRROR_URL = "http://kinox.to/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}";
-        private const string BASE_URL = "http://kinox.to/Stream/";
+        private const string BASE_URL = "kinox.to/Stream/";
 
         public Task<bool> IsCompatible(string url)
         {
-            return Task.Factory.StartNew(() => !string.IsNullOrEmpty(url) && url.StartsWith(BASE_URL));
+            return Task.Factory.StartNew(() =>
+            {
+                url = url.Replace("http://www.", "").Replace("http://", "");
+                return !string.IsNullOrEmpty(url) && url.StartsWith(BASE_URL);
+            });
         }
 
         public async Task<string> GetStreamUrl(string filmUrl, int season, int episode)

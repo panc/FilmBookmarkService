@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using FilmBookmarkService.Core;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 
 namespace FilmBookmarkService.Controllers
@@ -15,8 +16,12 @@ namespace FilmBookmarkService.Controllers
 
         public FilmController()
         {
-            _dataStore = new Lazy<FilmStore>(
-               () => HttpContext.GetOwinContext().Get<FilmStore>());
+            _dataStore = new Lazy<FilmStore>(() =>
+            {
+                var appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString(); ;
+                var user = HttpContext.User.Identity.GetUserName();
+                return FilmStore.Create(appDataPath, user);
+            });
         }
 
         private FilmStore FilmStore
@@ -50,7 +55,7 @@ namespace FilmBookmarkService.Controllers
 
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
-                
+
                 var result = await film.Parser.GetNextEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
@@ -80,15 +85,15 @@ namespace FilmBookmarkService.Controllers
             try
             {
                 var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
-                
+
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
-                
+
                 var result = await film.Parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
-                    return _Failure("No more episodes for the configured streaming service available!"); 
-                
+                    return _Failure("No more episodes for the configured streaming service available!");
+
                 film.Season = result.Season;
                 film.Episode = result.Episode;
                 await FilmStore.SaveChangesAsync();
@@ -131,7 +136,7 @@ namespace FilmBookmarkService.Controllers
 
         [HttpPost]
         public async Task<ActionResult> AddFilm(Film film)
-        {      
+        {
             var parser = await WebsiteParsingHelper.GetParser(film.Url);
 
             if (parser == null)
@@ -162,7 +167,7 @@ namespace FilmBookmarkService.Controllers
             film.Season = updatedFilm.Season;
             film.Episode = updatedFilm.Episode;
             film.SetParser(parser);
-                        
+
             await FilmStore.SaveChangesAsync();
 
             return _Success();
@@ -183,7 +188,7 @@ namespace FilmBookmarkService.Controllers
 
             return _Success();
         }
-        
+
         [HttpPost]
         public async Task<ActionResult> RemoveFilm(int id)
         {
@@ -216,7 +221,7 @@ namespace FilmBookmarkService.Controllers
                 return _Failure(ex.Message);
             }
         }
-        
+
         private ActionResult _Success()
         {
             return Json(new { success = true });

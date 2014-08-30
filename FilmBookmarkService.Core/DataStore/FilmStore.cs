@@ -8,15 +8,15 @@ namespace FilmBookmarkService.Core
 {
     public class FilmStore : IDisposable
     {
-        private const string FILE_NAME = "films.json";
+        private const string FILE_NAME = "films.{0}.json";
 
         private readonly string _filePath;
         private readonly Lazy<List<Film>> _films;
 
-        public FilmStore(string appDataPath)
+        public FilmStore(string appDataPath, string postFix)
         {
             _films = new Lazy<List<Film>>(_ReadFilmsFromFile);
-            _filePath = Path.Combine(appDataPath, FILE_NAME);
+            _filePath = Path.Combine(appDataPath, string.Format(FILE_NAME, postFix));
         }
 
         public Film[] Films
@@ -39,7 +39,7 @@ namespace FilmBookmarkService.Core
         {
             return Task.Factory.StartNew(() =>
             {
-                var content = JsonConvert.SerializeObject(_films);
+                var content = JsonConvert.SerializeObject(_films.Value);
                 File.WriteAllText(_filePath, content);
             });
         }
@@ -53,9 +53,9 @@ namespace FilmBookmarkService.Core
             return JsonConvert.DeserializeObject<List<Film>>(content) ?? new List<Film>();
         }
 
-        public static FilmStore Create(string appDataPath)
+        public static FilmStore Create(string appDataPath, string postFix)
         {
-            return new FilmStore(appDataPath);
+            return new FilmStore(appDataPath, postFix);
         }
 
         public void Dispose()
