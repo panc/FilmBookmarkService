@@ -6,40 +6,33 @@ using Newtonsoft.Json;
 
 namespace FilmBookmarkService.Core
 {
-    public class DataStore : IDisposable
+    public class FilmStore : IDisposable
     {
         private const string FILE_NAME = "films.json";
 
         private readonly string _filePath;
-        private List<Film> _films;
+        private readonly Lazy<List<Film>> _films;
 
-        public DataStore(string appDataPath)
+        public FilmStore(string appDataPath)
         {
+            _films = new Lazy<List<Film>>(_ReadFilmsFromFile);
             _filePath = Path.Combine(appDataPath, FILE_NAME);
         }
 
         public Film[] Films
         {
-            get
-            {
-                _LoadFilmsIfNeeded();
-                return _films.ToArray();
-            }
+            get { return _films.Value.ToArray(); }
         }
 
         public void AddFilm(Film film)
         {
-            _LoadFilmsIfNeeded();
-
-            film.Id = _films.Count;
-            _films.Add(film);
+            film.Id = _films.Value.Count;
+            _films.Value.Add(film);
         }
 
         public void RemoveFilm(Film film)
         {
-            _LoadFilmsIfNeeded();
-
-            _films.Remove(film);
+            _films.Value.Remove(film);
         }
 
         public Task SaveChangesAsync()
@@ -51,14 +44,6 @@ namespace FilmBookmarkService.Core
             });
         }
 
-        private void _LoadFilmsIfNeeded()
-        {
-            if (_films == null)
-            {
-                _films = _ReadFilmsFromFile();
-            }
-        }
-
         private List<Film> _ReadFilmsFromFile()
         {
             if (!File.Exists(_filePath))
@@ -68,9 +53,9 @@ namespace FilmBookmarkService.Core
             return JsonConvert.DeserializeObject<List<Film>>(content) ?? new List<Film>();
         }
 
-        public static DataStore Create(string appDataPath)
+        public static FilmStore Create(string appDataPath)
         {
-            return new DataStore(appDataPath);
+            return new FilmStore(appDataPath);
         }
 
         public void Dispose()

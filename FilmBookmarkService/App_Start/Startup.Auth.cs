@@ -16,7 +16,7 @@ namespace FilmBookmarkService
             var appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString(); ;
 
             // Configure the datastore to use a single instance per request
-            app.CreatePerOwinContext(() => DataStore.Create(appDataPath));
+            app.CreatePerOwinContext(() => FilmStore.Create(appDataPath));
 
             // Enable the application to use a cookie to store information for the signed in user
             app.UseCookieAuthentication(new CookieAuthenticationOptions

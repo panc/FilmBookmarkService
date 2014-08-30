@@ -12,29 +12,29 @@ namespace FilmBookmarkService.Controllers
     [Authorize]
     public class FilmController : Controller
     {
-        private readonly Lazy<DataStore> _dataStore;
+        private readonly Lazy<FilmStore> _dataStore;
 
         public FilmController()
         {
-            _dataStore = new Lazy<DataStore>(
-               () => HttpContext.GetOwinContext().Get<DataStore>());
+            _dataStore = new Lazy<FilmStore>(
+               () => HttpContext.GetOwinContext().Get<FilmStore>());
         }
 
-        private DataStore DataStore
+        private FilmStore FilmStore
         {
             get { return _dataStore.Value; }
         }
 
         public ActionResult Index()
         {
-            var list = DataStore.Films.OrderBy(x => x.SortIndex).ToList();
+            var list = FilmStore.Films.OrderBy(x => x.SortIndex).ToList();
             return View(list);
         }
 
         [HttpPost]
         public async Task<ActionResult> GetStream(int id)
         {
-            var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+            var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
@@ -47,7 +47,7 @@ namespace FilmBookmarkService.Controllers
         {
             try
             {
-                var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
@@ -59,7 +59,7 @@ namespace FilmBookmarkService.Controllers
 
                 film.Season = result.Season;
                 film.Episode = result.Episode;
-                await DataStore.SaveChangesAsync();
+                await FilmStore.SaveChangesAsync();
 
                 return Json(new
                 {
@@ -80,7 +80,7 @@ namespace FilmBookmarkService.Controllers
         {
             try
             {
-                var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
                 
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
@@ -92,7 +92,7 @@ namespace FilmBookmarkService.Controllers
                 
                 film.Season = result.Season;
                 film.Episode = result.Episode;
-                await DataStore.SaveChangesAsync();
+                await FilmStore.SaveChangesAsync();
 
                 return Json(new
                 {
@@ -113,7 +113,7 @@ namespace FilmBookmarkService.Controllers
         {
             try
             {
-                var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
@@ -140,8 +140,8 @@ namespace FilmBookmarkService.Controllers
 
             film.SetParser(parser);
 
-            DataStore.AddFilm(film);
-            await DataStore.SaveChangesAsync();
+            FilmStore.AddFilm(film);
+            await FilmStore.SaveChangesAsync();
 
             return _Success();
         }
@@ -149,7 +149,7 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> EditFilm(int id, Film updatedFilm)
         {
-            var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+            var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
@@ -164,7 +164,7 @@ namespace FilmBookmarkService.Controllers
             film.Episode = updatedFilm.Episode;
             film.SetParser(parser);
                         
-            await DataStore.SaveChangesAsync();
+            await FilmStore.SaveChangesAsync();
 
             return _Success();
         }
@@ -174,13 +174,13 @@ namespace FilmBookmarkService.Controllers
         {
             var sortedIds = positions.ToList();
 
-            foreach (var film in DataStore.Films)
+            foreach (var film in FilmStore.Films)
             {
                 var index = sortedIds.IndexOf(film.Id.ToString());
                 film.SortIndex = index + 1;
             }
 
-            await DataStore.SaveChangesAsync();
+            await FilmStore.SaveChangesAsync();
 
             return _Success();
         }
@@ -188,12 +188,12 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> RemoveFilm(int id)
         {
-            var film = DataStore.Films.SingleOrDefault(x => x.Id == id);
+            var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
 
-            DataStore.RemoveFilm(film);
-            await DataStore.SaveChangesAsync();
+            FilmStore.RemoveFilm(film);
+            await FilmStore.SaveChangesAsync();
 
             return _Success();
         }
