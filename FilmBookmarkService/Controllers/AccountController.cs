@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Configuration;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using FilmBookmarkService.Core;
 using FilmBookmarkService.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using Microsoft.AspNet.Identity.Owin;
 
 namespace FilmBookmarkService.Controllers
 {
@@ -43,10 +46,10 @@ namespace FilmBookmarkService.Controllers
 
         private bool _Authenticate(string userName, string password)
         {
-            var user = ConfigurationManager.AppSettings["username"];
-            var pwd = ConfigurationManager.AppSettings["password"];
-
-            return userName == user && pwd == _Hash(password);
+            var hashedPassword = _Hash(password);
+            var userStore = HttpContext.GetOwinContext().Get<UserStore>();
+            
+            return userStore.Users.Any(x => x.UserName == userName && x.Password == hashedPassword);
         }
 
         private string _Hash(string password)

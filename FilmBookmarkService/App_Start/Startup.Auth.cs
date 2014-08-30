@@ -17,6 +17,7 @@ namespace FilmBookmarkService
 
             // Configure the datastore to use a single instance per request
             app.CreatePerOwinContext(() => FilmStore.Create(appDataPath));
+            app.CreatePerOwinContext(UserStore.Create);
 
             // Enable the application to use a cookie to store information for the signed in user
             app.UseCookieAuthentication(new CookieAuthenticationOptions

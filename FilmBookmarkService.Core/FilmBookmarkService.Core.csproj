@@ -47,7 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataStore\FileStore.cs" />
+    <Compile Include="DataStore\FilmStore.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="DataStore\UserStore.cs" />
     <Compile Include="Model\Film.cs" />
