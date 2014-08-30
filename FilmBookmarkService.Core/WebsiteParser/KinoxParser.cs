@@ -19,7 +19,7 @@ namespace FilmBookmarkService.Core
         {
             return Task.Factory.StartNew(() =>
             {
-                url = url.Replace("http://www.", "").Replace("http://", "");
+                url = _PrepareBaseUrl(url);
                 return !string.IsNullOrEmpty(url) && url.StartsWith(BASE_URL);
             });
         }
@@ -102,10 +102,17 @@ namespace FilmBookmarkService.Core
 
         private string _ParseUrlForFilmId(string url)
         {
+            url = _PrepareBaseUrl(url);
+
             if (string.IsNullOrEmpty(url) || !url.StartsWith(BASE_URL))
                 return string.Empty;
 
             return url.Replace(BASE_URL, "").Replace(".html", "");
+        }
+
+        private string _PrepareBaseUrl(string url)
+        {
+            return url.Replace("http://www.", "").Replace("http://", "");
         }
     }
 }
