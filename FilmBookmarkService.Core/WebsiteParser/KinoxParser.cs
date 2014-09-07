@@ -31,6 +31,27 @@ namespace FilmBookmarkService.Core
             return await _GetMirror(filmUrl, season, episode, HOSTER_STREAMCLOUD);
         }
 
+        public async Task<int> GetNumberOfEpisodes(string filmUrl, int season)
+        {
+            var client = new HttpClient();
+            var response = await client.GetAsync(new Uri(filmUrl));
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var seasonSelectionNode = doc.DocumentNode.SelectSingleNode("//select[@id='SeasonSelection']");
+            var seasonNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
+
+            var numberOfEpisodes = seasonNode
+                .GetAttributeValue("rel", "")
+                .Split(',')
+                .Last();
+
+            return Convert.ToInt32(numberOfEpisodes);
+        }
+
         public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)
         {
             episode++;
@@ -63,7 +84,7 @@ namespace FilmBookmarkService.Core
 
             if (mirror == null)
                 return null;
-            
+
             return new GetEpisodeResult(season, episode, mirror);
         }
 
@@ -91,11 +112,11 @@ namespace FilmBookmarkService.Core
         {
             var optionNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
 
-            var seasons = optionNode
+            var episodes = optionNode
                 .GetAttributeValue("rel", "")
                 .Split(',');
 
-            return seasons.Contains(episode.ToString(CultureInfo.InvariantCulture));
+            return episodes.Contains(episode.ToString(CultureInfo.InvariantCulture));
         }
 
         private async Task<string> _GetMirror(string filmUrl, int season, int episode, string hoster)
@@ -108,7 +129,7 @@ namespace FilmBookmarkService.Core
 
             var filmId = _ParseUrlForFilmId(filmUrl);
             var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode, mirrorNumber);
-            
+
             var client = new HttpClient();
             var response = await client.GetAsync(new Uri(url));
             response.EnsureSuccessStatusCode();

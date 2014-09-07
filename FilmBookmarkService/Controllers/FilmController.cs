@@ -36,12 +36,29 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> GetStream(int id)
         {
-            var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
+            try
+            {
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
-            if (film == null)
-                return _Failure("Film with id {0} not found!", id);
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+                
+                var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
+                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
 
-            return await _GetStream(film);
+                return Json(new
+                {
+                    success = true,
+                    streamUrl = streamUrl,
+                    season = film.Season,
+                    episode = film.Episode,
+                    numberOfEpisodes = numberOfEpisodes
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -63,12 +80,15 @@ namespace FilmBookmarkService.Controllers
                 film.Episode = result.Episode;
                 await FilmStore.SaveChangesAsync();
 
+                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+
                 return Json(new
                 {
                     success = true,
                     streamUrl = result.StreamUrl,
                     season = result.Season,
-                    episode = result.Episode
+                    episode = result.Episode,
+                    numberOfEpisodes = numberOfEpisodes
                 });
             }
             catch (Exception ex)
@@ -96,12 +116,15 @@ namespace FilmBookmarkService.Controllers
                 film.Episode = result.Episode;
                 await FilmStore.SaveChangesAsync();
 
+                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+
                 return Json(new
                 {
                     success = true,
                     streamUrl = result.StreamUrl,
                     season = result.Season,
-                    episode = result.Episode
+                    episode = result.Episode,
+                    numberOfEpisodes = numberOfEpisodes
                 });
             }
             catch (Exception ex)
@@ -198,26 +221,6 @@ namespace FilmBookmarkService.Controllers
             await FilmStore.SaveChangesAsync();
 
             return _Success();
-        }
-
-        private async Task<ActionResult> _GetStream(Film film)
-        {
-            try
-            {
-                var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
-
-                return Json(new
-                {
-                    success = true,
-                    streamUrl = streamUrl,
-                    season = film.Season,
-                    episode = film.Episode
-                });
-            }
-            catch (Exception ex)
-            {
-                return _Failure(ex.Message);
-            }
         }
 
         private ActionResult _Success()

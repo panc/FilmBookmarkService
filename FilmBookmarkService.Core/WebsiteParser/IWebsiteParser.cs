@@ -8,6 +8,8 @@ namespace FilmBookmarkService.Core
 
         Task<string> GetStreamUrl(string filmUrl, int season, int episode);
 
+        Task<int> GetNumberOfEpisodes(string filmUrl, int season);
+
         Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode);
 
         Task<GetEpisodeResult> GetPrevEpisode(string filmUrl, int season, int episode);
