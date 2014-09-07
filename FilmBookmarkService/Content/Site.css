@@ -23,14 +23,11 @@ textarea {
     max-width: 280px;
 }
 
-.ui-state-highlight { height: 40px; line-height: 40px; }
+.ui-state-highlight { height: 70px; line-height: 70px; }
 
 .film {
     line-height: 40px;
-}
-
-.film:hover {
-    background-color: #f1f1f1;
+    margin-top: 10px;
 }
 
 div.button {
@@ -66,11 +63,17 @@ div.button {
 }
 
 .film-view .url {
-    width: 200px;
+    margin-left: 55px;
+    font-weight: bold;
+    font-size: 16px;
 }
 
-.film-view .id {
-    width: 20px;
+.film-view .cover {
+    margin-left: 10px;
+}
+
+.film-view .cover img {
+    width: 70px;
 }
 
 .film-view .stream {
@@ -78,18 +81,28 @@ div.button {
 }
 
 .film-view .indicator {
-    margin-top: 6px;
+    margin-top: 15px;
     width: 10px;
-    height: 30px;
+    height: 10px;
     background-color: #88df64;
+    border-radius: 5px;
 }
 
 .film-view .sort {
     cursor: move;
     margin-left: 3px;
-    margin-top: 4px;float: left;
+    margin-top: 35px;
+    float: left;
     min-width: 5px;
     min-height: 1px;
+}
+
+.film-view .edit-button {
+    display: none;
+}
+
+.film:hover > .film-view .edit-button {
+    display: block;
 }
 
 .film-view .sort img {

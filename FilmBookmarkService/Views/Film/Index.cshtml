@@ -18,15 +18,20 @@
 
                     <div class="film-view">
                         <div class="sort"><img src="~/Content/images/grippy_large.png" /></div>
-                        <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
+                        
+                        <div class="film-part cover"><img src="@film.CoverUrl" /></div>
+                        <div class="film-part">
+                            <div class="film-part url"><a href="@film.Url" target="_blank">@film.Name</a></div>
+                            <div class="film-part indicator" style="display: none"></div>
+                            <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
 
-                        <div class="film-part id">@film.Id</div>
-                        <div class="film-part url"><a href="@film.Url" target="_blank">@film.Name</a></div>
-
-                        <div class="film-part button prev-episode-button"><span class="glyphicon glyphicon-chevron-left"></span></div>
-                        <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif" /></div>
-                        <div class="film-part button next-episode-button"><span class="glyphicon glyphicon-chevron-right"></span></div>
-                        <div class="film-part indicator" style="display: none"></div>
+                            <div class="clearfix"></div>
+                            <div>
+                                <div class="film-part button prev-episode-button"><span class="glyphicon glyphicon-chevron-left"></span></div>
+                                <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif" /></div>
+                                <div class="film-part button next-episode-button"><span class="glyphicon glyphicon-chevron-right"></span></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="film-editor" style="display: none">

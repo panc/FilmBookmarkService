@@ -42,7 +42,7 @@ namespace FilmBookmarkService.Controllers
 
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
-                
+
                 var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
                 var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
 
@@ -163,6 +163,7 @@ namespace FilmBookmarkService.Controllers
             if (parser == null)
                 return _Failure("No parser found for {0}!", film.Url);
 
+            film.CoverUrl = await parser.GetCoverUrl(film.Url);
             film.SetParser(parser);
 
             FilmStore.AddFilm(film);
@@ -187,6 +188,8 @@ namespace FilmBookmarkService.Controllers
             film.Url = updatedFilm.Url;
             film.Season = updatedFilm.Season;
             film.Episode = updatedFilm.Episode;
+            film.CoverUrl = await parser.GetCoverUrl(film.Url);
+
             film.SetParser(parser);
 
             await FilmStore.SaveChangesAsync();

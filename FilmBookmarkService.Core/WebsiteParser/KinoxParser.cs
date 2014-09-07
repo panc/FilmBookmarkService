@@ -26,9 +26,21 @@ namespace FilmBookmarkService.Core
             });
         }
 
-        public async Task<string> GetStreamUrl(string filmUrl, int season, int episode)
+        public async Task<string> GetCoverUrl(string filmUrl)
         {
-            return await _GetMirror(filmUrl, season, episode, HOSTER_STREAMCLOUD);
+            var client = new HttpClient();
+            var response = await client.GetAsync(new Uri(filmUrl));
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var coverNode = doc.DocumentNode.SelectSingleNode("//div[@class='Grahpics']//a//img[@src]");
+
+            return coverNode != null
+                ? coverNode.GetAttributeValue("src", "")
+                : string.Empty;
         }
 
         public async Task<int> GetNumberOfEpisodes(string filmUrl, int season)
@@ -50,6 +62,11 @@ namespace FilmBookmarkService.Core
                 .Last();
 
             return Convert.ToInt32(numberOfEpisodes);
+        }
+
+        public async Task<string> GetStreamUrl(string filmUrl, int season, int episode)
+        {
+            return await _GetMirror(filmUrl, season, episode, HOSTER_STREAMCLOUD);
         }
 
         public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)

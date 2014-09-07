@@ -6,6 +6,8 @@ namespace FilmBookmarkService.Core
     {
         Task<bool> IsCompatible(string url);
 
+        Task<string> GetCoverUrl(string filmUrl);
+
         Task<string> GetStreamUrl(string filmUrl, int season, int episode);
 
         Task<int> GetNumberOfEpisodes(string filmUrl, int season);
