@@ -12,7 +12,7 @@ namespace FilmBookmarkService.Core
         // http://kinox.to/Stream/Castle.html
 
         private const string HOSTER_STREAMCLOUD = "30";
-        private const string GET_MIRROR_URL = "http://kinox.to/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}";
+        private const string GET_MIRROR_URL = "http://kinox.to/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}&Mirror={4}";
         private const string BASE_URL = "kinox.to/Stream/";
 
         public Task<bool> IsCompatible(string url)
@@ -80,8 +80,14 @@ namespace FilmBookmarkService.Core
 
         private async Task<string> _GetMirror(string filmUrl, int season, int episode, string hoster)
         {
+            // We assume that 5 mirrors are available
+            // so we are trying to get the link to one of those 5.
+            // It's no problem if the mirror is not available, 
+            // the the service returns the default mirror (number 1).
+            var mirrorNumber = new Random().Next(1, 5);
+
             var filmId = _ParseUrlForFilmId(filmUrl);
-            var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode);
+            var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode, mirrorNumber);
             
             var client = new HttpClient();
             var response = await client.GetAsync(new Uri(url));
