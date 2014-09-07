@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -67,15 +69,33 @@ namespace FilmBookmarkService.Core
 
         public async Task<bool> IsAnotherEpisodeAvailable(string filmUrl, int season, int episode)
         {
-            // todo
-            // check real episodes
+            var client = new HttpClient();
+            var response = await client.GetAsync(new Uri(filmUrl));
+            response.EnsureSuccessStatusCode();
 
-            var mirror = await _GetMirror(filmUrl, season, episode + 1, HOSTER_STREAMCLOUD);
+            var content = await response.Content.ReadAsStringAsync();
 
-            if (mirror == null)
-                mirror = await _GetMirror(filmUrl, season + 1, 1, HOSTER_STREAMCLOUD);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var seasonSelectionNode = doc.DocumentNode.SelectSingleNode("//select[@id='SeasonSelection']");
 
-            return mirror != null;
+            var isEpisodeAvailable = _CheckNodeForEpisodeOption(seasonSelectionNode, season, episode + 1);
+
+            if (!isEpisodeAvailable)
+                return _CheckNodeForEpisodeOption(seasonSelectionNode, season + 1, 1);
+
+            return true;
+        }
+
+        private bool _CheckNodeForEpisodeOption(HtmlNode seasonSelectionNode, int season, int episode)
+        {
+            var optionNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
+
+            var seasons = optionNode
+                .GetAttributeValue("rel", "")
+                .Split(',');
+
+            return seasons.Contains(episode.ToString(CultureInfo.InvariantCulture));
         }
 
         private async Task<string> _GetMirror(string filmUrl, int season, int episode, string hoster)
