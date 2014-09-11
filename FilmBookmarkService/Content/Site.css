@@ -26,8 +26,8 @@ textarea {
 .ui-state-highlight { height: 70px; line-height: 70px; }
 
 .film {
-    line-height: 40px;
-    margin-top: 10px;
+    line-height: 32px;
+    margin-top: 20px;
 }
 
 div.button {
@@ -35,10 +35,6 @@ div.button {
 }
 
 .film-part {
-    margin-left: 20px;
-}
-
-.btn.film-part {
     margin-left: 10px;
 }
 
@@ -63,7 +59,6 @@ div.button {
 }
 
 .film-view .url {
-    margin-left: 55px;
     font-weight: bold;
     font-size: 16px;
 }
@@ -81,11 +76,15 @@ div.button {
 }
 
 .film-view .indicator {
-    margin-top: 15px;
+    margin-top: 10px;
     width: 10px;
     height: 10px;
     background-color: #88df64;
     border-radius: 5px;
+}
+
+.film-view .film-part .button {
+    color: #428bca;
 }
 
 .film-view .sort {
