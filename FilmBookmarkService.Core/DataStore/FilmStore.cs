@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -27,6 +28,7 @@ namespace FilmBookmarkService.Core
         public void AddFilm(Film film)
         {
             film.Id = _films.Value.Count;
+            film.SortIndex = _films.Value.Max(x => x.SortIndex) + 1;
             _films.Value.Add(film);
         }
 
