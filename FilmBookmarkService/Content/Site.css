@@ -72,7 +72,7 @@ div.button {
 }
 
 .film-view .stream {
-    width: 210px;
+    width: 215px;
 }
 
 .film-view .indicator {
@@ -112,6 +112,10 @@ div.button {
     display: block;
 }
 
+.film-view .favorite {
+    cursor: pointer;
+}
+
 .film:hover > .film-view .sort-empty {
     display: none;
 }
@@ -138,6 +142,6 @@ div.button {
     color: #333;
 }
 
-.favourite-icon {
+.favorite-icon {
     margin-top: -6px;
 }

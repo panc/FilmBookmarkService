@@ -21,7 +21,7 @@ namespace FilmBookmarkService.Core
         
         public int Episode { get; set; }
 
-        public bool IsFavourite { get; set; }
+        public bool IsFavorite { get; set; }
         
         public string ParserType { get; set; }
 

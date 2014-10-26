@@ -3,7 +3,7 @@
 @model List<Film>
 
 <div class="playlist clearfix">
-    <a class="left playlist-item @ViewBag.FavouritesClass" href="@Url.Action("Index")">Favourites</a>
+    <a class="left playlist-item @ViewBag.FavoritesClass" href="@Url.Action("Index")">Favorites</a>
     <a class="left playlist-item @ViewBag.AllFilmsClass" href="@Url.Action("Index", "Film", new { allFilms = true })">All Films</a>
 </div>
 
@@ -23,7 +23,7 @@
                         
                         <div class="film-part cover"><img src="@film.CoverUrl"/></div>
                         <div class="film-part">
-                            <div class="film-part favourite" data-isfavourite="@film.IsFavourite" ><img class="favourite-icon" width="16" src="@(film.IsFavourite ? "/Content/images/star.png" : "/Content/images/star-disabled.png")"/></div>
+                            <div class="film-part favorite"><img class="favorite-icon" width="16" src="@(film.IsFavorite ? "/Content/images/star.png" : "/Content/images/star-disabled.png")"/></div>
                             <div class="film-part url"><a href="@film.Url" target="_blank">@film.Name</a></div>
                             <div class="film-part indicator" style="display: none"></div>
                             <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
@@ -85,7 +85,7 @@
                     prevEpisodeUrl: "@Url.Action("PrevEpisode")",
                     isAnotherEpisodeAvailableUrl: "@Url.Action("IsAnotherEpisodeAvailable")",
                     updateSortOrderUrl: "@Url.Action("UpdateSortOrder")",
-                    setIsFavouriteUrl: "@Url.Action("SetIsFavourite")"
+                    setIsFavoriteUrl: "@Url.Action("SetIsFavorite")"
                 });
             });
         </script>

@@ -29,13 +29,13 @@ namespace FilmBookmarkService.Controllers
 
         public ActionResult Index(bool allFilms = false)
         {
-            ViewBag.FavouritesClass = allFilms ? "" : "selected";
+            ViewBag.FavoritesClass = allFilms ? "" : "selected";
             ViewBag.AllFilmsClass = allFilms ? "selected" : "";
             ViewBag.CanChangeSortIndex = allFilms == false;
 
             var list = allFilms
                 ? FilmStore.Films.OrderBy(x => x.Name).ToList()
-                : FilmStore.Films.Where(x => x.IsFavourite).OrderBy(x => x.SortIndex).ToList();
+                : FilmStore.Films.Where(x => x.IsFavorite).OrderBy(x => x.SortIndex).ToList();
 
             return View(list);
         }
@@ -171,6 +171,7 @@ namespace FilmBookmarkService.Controllers
                 return _Failure("No parser found for {0}!", film.Url);
 
             film.CoverUrl = await parser.GetCoverUrl(film.Url);
+            film.IsFavorite = true;
             film.SetParser(parser);
 
             FilmStore.AddFilm(film);
@@ -221,19 +222,19 @@ namespace FilmBookmarkService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> SetIsFavourite(int id)
+        public async Task<ActionResult> SetIsFavorite(int id)
         {
             var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
 
-            film.IsFavourite = !film.IsFavourite;
+            film.IsFavorite = !film.IsFavorite;
             await FilmStore.SaveChangesAsync();
 
             return Json(new
             {
-                isFavourite = film.IsFavourite 
+                isFavorite = film.IsFavorite 
             });
         }
 
