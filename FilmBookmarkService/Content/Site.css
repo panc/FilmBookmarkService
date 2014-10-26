@@ -115,3 +115,29 @@ div.button {
 .film:hover > .film-view .sort-empty {
     display: none;
 }
+
+.playlist .playlist-item {
+    font-size: 20px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.1;
+    color: #595959;
+    
+    margin-right: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.playlist .playlist-item:hover {
+    text-decoration: none;
+}
+
+.playlist .selected{
+    border-bottom: 3px #428bca solid;
+    color: #333;
+}
+
+.favourite-icon {
+    margin-top: -6px;
+}

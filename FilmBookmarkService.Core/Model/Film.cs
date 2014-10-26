@@ -20,6 +20,8 @@ namespace FilmBookmarkService.Core
         public int Season { get; set; }
         
         public int Episode { get; set; }
+
+        public bool IsFavourite { get; set; }
         
         public string ParserType { get; set; }
 

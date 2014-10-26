@@ -27,9 +27,16 @@ namespace FilmBookmarkService.Controllers
             get { return _dataStore.Value; }
         }
 
-        public ActionResult Index()
+        public ActionResult Index(bool allFilms = false)
         {
-            var list = FilmStore.Films.OrderBy(x => x.SortIndex).ToList();
+            ViewBag.FavouritesClass = allFilms ? "" : "selected";
+            ViewBag.AllFilmsClass = allFilms ? "selected" : "";
+            ViewBag.CanChangeSortIndex = allFilms == false;
+
+            var list = allFilms
+                ? FilmStore.Films.OrderBy(x => x.Name).ToList()
+                : FilmStore.Films.Where(x => x.IsFavourite).OrderBy(x => x.SortIndex).ToList();
+
             return View(list);
         }
 
@@ -144,7 +151,7 @@ namespace FilmBookmarkService.Controllers
                     return _Failure("Film with id {0} not found!", id);
 
                 var isAnotherEpisodeAvailable = await film.Parser.IsAnotherEpisodeAvailable(film.Url, film.Season, film.Episode);
-
+                
                 return isAnotherEpisodeAvailable
                     ? _Success()
                     : _Failure("");
@@ -211,6 +218,23 @@ namespace FilmBookmarkService.Controllers
             await FilmStore.SaveChangesAsync();
 
             return _Success();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> SetIsFavourite(int id)
+        {
+            var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
+
+            if (film == null)
+                return _Failure("Film with id {0} not found!", id);
+
+            film.IsFavourite = !film.IsFavourite;
+            await FilmStore.SaveChangesAsync();
+
+            return Json(new
+            {
+                isFavourite = film.IsFavourite 
+            });
         }
 
         [HttpPost]

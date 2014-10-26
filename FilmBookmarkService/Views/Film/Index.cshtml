@@ -2,11 +2,10 @@
 
 @model List<Film>
 
-@{
-    ViewBag.Title = "Your Films.";
-}
-
-<h2>@ViewBag.Title</h2>
+<div class="playlist clearfix">
+    <a class="left playlist-item @ViewBag.FavouritesClass" href="@Url.Action("Index")">Favourites</a>
+    <a class="left playlist-item @ViewBag.AllFilmsClass" href="@Url.Action("Index", "Film", new { allFilms = true })">All Films</a>
+</div>
 
 <div class="row">
     <div class="col-md-10">
@@ -17,10 +16,14 @@
                 <div class="film clearfix" id="@film.Id">
 
                     <div class="film-view">
-                        <div class="sort"><img src="~/Content/images/grippy_large.png" /></div>
+                        @if (ViewBag.CanChangeSortIndex)
+                        {
+                            <div class="sort"><img src="~/Content/images/grippy_large.png"/></div>
+                        }
                         
-                        <div class="film-part cover"><img src="@film.CoverUrl" /></div>
+                        <div class="film-part cover"><img src="@film.CoverUrl"/></div>
                         <div class="film-part">
+                            <div class="film-part favourite" data-isfavourite="@film.IsFavourite" ><img class="favourite-icon" width="16" src="@(film.IsFavourite ? "/Content/images/star.png" : "/Content/images/star-disabled.png")"/></div>
                             <div class="film-part url"><a href="@film.Url" target="_blank">@film.Name</a></div>
                             <div class="film-part indicator" style="display: none"></div>
                             <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
@@ -81,7 +84,8 @@
                     nextEpisodeUrl: "@Url.Action("NextEpisode")",
                     prevEpisodeUrl: "@Url.Action("PrevEpisode")",
                     isAnotherEpisodeAvailableUrl: "@Url.Action("IsAnotherEpisodeAvailable")",
-                    updateSortOrderUrl: "@Url.Action("UpdateSortOrder")"
+                    updateSortOrderUrl: "@Url.Action("UpdateSortOrder")",
+                    setIsFavouriteUrl: "@Url.Action("SetIsFavourite")"
                 });
             });
         </script>
