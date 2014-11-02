@@ -8,6 +8,8 @@
 
         public string Url { get; set; }
 
+        public string UndecoratedUrl { get; set; }
+
         public string CoverUrl { get; set; }
 
         public int Season { get; set; }

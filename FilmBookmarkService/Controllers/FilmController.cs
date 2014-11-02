@@ -45,6 +45,7 @@ namespace FilmBookmarkService.Controllers
                 Episode = f.Episode,
                 IsFavorite = f.IsFavorite,
                 Url = WebProxy.DecorateUrl(f.Url),
+                UndecoratedUrl = f.Url,
                 CoverUrl = WebProxy.DecorateUrl(f.CoverUrl)
             });
 
@@ -181,8 +182,8 @@ namespace FilmBookmarkService.Controllers
                 Name = model.Name,
                 Url = model.Url,
                 CoverUrl = model.CoverUrl,
-                Season = model.Season,
-                Episode = model.Episode,
+                Season = model.Season > 0 ? model.Season : 1,
+                Episode = model.Episode > 0 ? model.Episode : 1,
                 IsFavorite = model.IsFavorite
             };
 
