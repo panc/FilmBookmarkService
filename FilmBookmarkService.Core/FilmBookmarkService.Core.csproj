@@ -56,6 +56,7 @@
     <Compile Include="WebsiteParser\IWebsiteParser.cs" />
     <Compile Include="WebsiteParser\KinoxParser.cs" />
     <Compile Include="WebsiteParser\KinoxMirrorDto.cs" />
+    <Compile Include="WebsiteParser\WebProxy.cs" />
     <Compile Include="WebsiteParser\WebsiteParsingHelper.cs" />
   </ItemGroup>
   <ItemGroup />

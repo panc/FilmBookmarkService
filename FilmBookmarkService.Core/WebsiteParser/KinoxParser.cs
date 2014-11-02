@@ -33,7 +33,7 @@ namespace FilmBookmarkService.Core
 
         public async Task<string> GetCoverUrl(string filmUrl)
         {
-            var content = await _ExecuteHttpRequest(filmUrl);
+            var content = await _ExecuteHttpRequest(filmUrl, false);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
@@ -51,7 +51,7 @@ namespace FilmBookmarkService.Core
 
         public async Task<int> GetNumberOfEpisodes(string filmUrl, int season)
         {
-            var content = await _ExecuteHttpRequest(filmUrl);
+            var content = await _ExecuteHttpRequest(filmUrl, false);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
@@ -109,7 +109,7 @@ namespace FilmBookmarkService.Core
 
         public async Task<bool> IsAnotherEpisodeAvailable(string filmUrl, int season, int episode)
         {
-            var content = await _ExecuteHttpRequest(filmUrl);
+            var content = await _ExecuteHttpRequest(filmUrl, false);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
@@ -145,7 +145,7 @@ namespace FilmBookmarkService.Core
             var filmId = await _ParseUrlForFilmId(filmUrl);
             var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode, mirrorNumber);
 
-            var content = await _ExecuteHttpRequest(url);
+            var content = await _ExecuteHttpRequest(url, true);
             var mirror = JsonConvert.DeserializeObject<KinoxMirrorDto>(content);
 
             if (mirror == null)
@@ -155,7 +155,9 @@ namespace FilmBookmarkService.Core
             doc.LoadHtml(mirror.Stream);
             var node = doc.DocumentNode.SelectSingleNode("//a[@href]");
 
-            return node.Attributes["href"].Value;
+            var mirrorUrl = node.Attributes["href"].Value;
+
+            return WebProxy.DecorateUrl(mirrorUrl);
         }
 
         private async Task<string> _ParseUrlForFilmId(string url)
@@ -174,15 +176,26 @@ namespace FilmBookmarkService.Core
             return url.Replace(LOCKED_BASE_URL, BASE_URL);
         }
 
-        private async Task<string> _ExecuteHttpRequest(string filmUrl)
+        private async Task<string> _ExecuteHttpRequest(string filmUrl, bool removeProxyContent)
         {
+            filmUrl = WebProxy.DecorateUrl(filmUrl);
+
             var url = _PrepareUrl(filmUrl);
             var client = new HttpClient();
 
             var response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!removeProxyContent)
+                return content;
+
+            var styleIndex = content.IndexOf("<style", StringComparison.Ordinal);
+            if (styleIndex > 0)
+                return content.Substring(0, styleIndex);
+
+            return content;
         }
     }
 }

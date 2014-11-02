@@ -37,7 +37,18 @@ namespace FilmBookmarkService.Controllers
                 ? FilmStore.Films.OrderBy(x => x.Name).ToList()
                 : FilmStore.Films.Where(x => x.IsFavorite).OrderBy(x => x.SortIndex).ToList();
 
-            return View(list);
+            var films = list.Select(f => new FilmViewModel
+            {
+                Id = f.Id,
+                Name = f.Name,
+                Season = f.Season,
+                Episode = f.Episode,
+                IsFavorite = f.IsFavorite,
+                Url = WebProxy.DecorateUrl(f.Url),
+                CoverUrl = WebProxy.DecorateUrl(f.CoverUrl)
+            });
+
+            return View(films.ToList());
         }
 
         [HttpPost]
@@ -163,14 +174,24 @@ namespace FilmBookmarkService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddFilm(Film film)
+        public async Task<ActionResult> AddFilm(FilmViewModel model)
         {
-            var parser = await WebsiteParsingHelper.GetParser(film.Url);
+            var film = new Film
+            {
+                Name = model.Name,
+                Url = model.Url,
+                CoverUrl = model.CoverUrl,
+                Season = model.Season,
+                Episode = model.Episode,
+                IsFavorite = model.IsFavorite
+            };
+
+            var parser = await WebsiteParsingHelper.GetParser(model.Url);
 
             if (parser == null)
-                return _Failure("No parser found for {0}!", film.Url);
+                return _Failure("No parser found for {0}!", model.Url);
 
-            film.CoverUrl = await parser.GetCoverUrl(film.Url);
+            film.CoverUrl = await parser.GetCoverUrl(model.Url);
             film.IsFavorite = true;
             film.SetParser(parser);
 
@@ -181,22 +202,22 @@ namespace FilmBookmarkService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> EditFilm(int id, Film updatedFilm)
+        public async Task<ActionResult> EditFilm(int id, FilmViewModel updatedFilm)
         {
             var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
 
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
 
-            var parser = await WebsiteParsingHelper.GetParser(film.Url);
+            var parser = await WebsiteParsingHelper.GetParser(updatedFilm.Url);
             if (parser == null)
-                return _Failure("No parser found for {0}!", film.Url);
+                return _Failure("No parser found for {0}!", updatedFilm.Url);
 
             film.Name = updatedFilm.Name;
             film.Url = updatedFilm.Url;
             film.Season = updatedFilm.Season;
             film.Episode = updatedFilm.Episode;
-            film.CoverUrl = await parser.GetCoverUrl(film.Url);
+            film.CoverUrl = await parser.GetCoverUrl(updatedFilm.Url);
 
             film.SetParser(parser);
 
