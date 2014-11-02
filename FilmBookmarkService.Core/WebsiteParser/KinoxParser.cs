@@ -157,7 +157,7 @@ namespace FilmBookmarkService.Core
 
             var mirrorUrl = node.Attributes["href"].Value;
 
-            return WebProxy.DecorateUrl(mirrorUrl);
+            return WebProxy.RemoveProxyDecoration(mirrorUrl);
         }
 
         private async Task<string> _ParseUrlForFilmId(string url)
