@@ -39,14 +39,19 @@
                     </div>
 
                     <div class="film-editor" style="display: none">
-                        <input class="edit-film-name film-part-edit form-control width-m" type="text" name="name" placeholder="Name" value="@film.Name" />
-                        <input class="edit-url film-part-edit form-control width-m" type="text" name="name" placeholder="Url" value="@film.UndecoratedUrl" />
-                        <input class="edit-season film-part-edit form-control width-s" type="text" name="name" placeholder="Season" value="@film.Season" />
-                        <input class="edit-episode film-part-edit form-control width-s" type="text" name="name" placeholder="Episode" value="@film.Episode" />
-
-                        <a class="film-part btn btn-success save-button" href="#"><span class="glyphicon glyphicon-floppy-disk"></span><span> Save</span></a>
-                        <a class="film-part btn btn-danger remove-button" href="#"><span class="glyphicon glyphicon-trash"></span><span> Remove</span></a>
-                        <a class="film-part cancel-button" href="#">Cancel</a>
+                        <div class="row">
+                            <input class="edit-film-name film-part-edit form-control width-m" type="text" name="name" placeholder="Name" value="@film.Name" />
+                            <input class="edit-url film-part-edit form-control width-m" type="text" name="url" placeholder="Url" value="@film.UndecoratedUrl" />
+                            <input class="edit-cover-url film-part-edit form-control width-m" type="text" name="coverulr" placeholder="Cover Url" value="@film.CoverUrl" />
+                            <input class="edit-season film-part-edit form-control width-s" type="text" name="season" placeholder="Season" value="@film.Season" />
+                            <input class="edit-episode film-part-edit form-control width-s" type="text" name="episode" placeholder="Episode" value="@film.Episode" />
+                        </div>
+                        
+                        <div class="row edit-row2">
+                            <a class="film-part btn btn-success save-button" href="#"><span class="glyphicon glyphicon-floppy-disk"></span><span> Save</span></a>
+                            <a class="film-part btn btn-danger remove-button" href="#"><span class="glyphicon glyphicon-trash"></span><span> Remove</span></a>
+                            <a class="film-part cancel-button" href="#">Cancel</a>
+                        </div>
                     </div>
                 </div>
             }
@@ -56,9 +61,10 @@
             <h4>Add new film:</h4>
             <div class="clearfix">
                 <input id="new-film-name" class="film-part-edit form-control width-m" type="text" name="name" placeholder="Name" />
-                <input id="new-url" class="film-part-edit form-control width-m" type="text" name="name" placeholder="Url" />
-                <input id="new-season" class="film-part-edit form-control width-s" type="text" name="name" placeholder="Season" />
-                <input id="new-episode" class="film-part-edit form-control width-s" type="text" name="name" placeholder="Episode" />
+                <input id="new-url" class="film-part-edit form-control width-m" type="text" name="url" placeholder="Url" />
+                <input id="new-cover-url" class="film-part-edit form-control width-m" type="text" name="coverurl" placeholder="Cover Url" />
+                <input id="new-season" class="film-part-edit form-control width-s" type="text" name="season" placeholder="Season" />
+                <input id="new-episode" class="film-part-edit form-control width-s" type="text" name="episode" placeholder="Episode" />
 
                 <a id="add-button" class="film-part btn btn-primary" href="#"><span class="glyphicon glyphicon-plus"></span><span> Add</span></a>
             </div>

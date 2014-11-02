@@ -46,7 +46,7 @@ namespace FilmBookmarkService.Controllers
                 IsFavorite = f.IsFavorite,
                 Url = WebProxy.DecorateUrl(f.Url),
                 UndecoratedUrl = f.Url,
-                CoverUrl = WebProxy.DecorateUrl(f.CoverUrl)
+                CoverUrl = f.CoverUrl
             });
 
             return View(films.ToList());
@@ -177,22 +177,22 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> AddFilm(FilmViewModel model)
         {
+            var url = WebProxy.RemoveProxyDecoration(model.Url);
+
             var film = new Film
             {
                 Name = model.Name,
-                Url = model.Url,
+                Url = url,
                 CoverUrl = model.CoverUrl,
                 Season = model.Season > 0 ? model.Season : 1,
                 Episode = model.Episode > 0 ? model.Episode : 1,
                 IsFavorite = model.IsFavorite
             };
 
-            var parser = await WebsiteParsingHelper.GetParser(model.Url);
-
+            var parser = await WebsiteParsingHelper.GetParser(url);
             if (parser == null)
-                return _Failure("No parser found for {0}!", model.Url);
+                return _Failure("No parser found for {0}!", url);
 
-            film.CoverUrl = await parser.GetCoverUrl(model.Url);
             film.IsFavorite = true;
             film.SetParser(parser);
 
@@ -206,19 +206,20 @@ namespace FilmBookmarkService.Controllers
         public async Task<ActionResult> EditFilm(int id, FilmViewModel updatedFilm)
         {
             var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
+            var url = WebProxy.RemoveProxyDecoration(updatedFilm.Url);
 
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
 
-            var parser = await WebsiteParsingHelper.GetParser(updatedFilm.Url);
+            var parser = await WebsiteParsingHelper.GetParser(url);
             if (parser == null)
-                return _Failure("No parser found for {0}!", updatedFilm.Url);
+                return _Failure("No parser found for {0}!", url);
 
             film.Name = updatedFilm.Name;
-            film.Url = updatedFilm.Url;
+            film.Url = url;
             film.Season = updatedFilm.Season;
             film.Episode = updatedFilm.Episode;
-            film.CoverUrl = await parser.GetCoverUrl(updatedFilm.Url);
+            film.CoverUrl = updatedFilm.CoverUrl;
 
             film.SetParser(parser);
 

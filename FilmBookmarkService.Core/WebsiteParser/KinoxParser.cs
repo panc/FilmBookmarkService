@@ -31,24 +31,6 @@ namespace FilmBookmarkService.Core
             });
         }
 
-        public async Task<string> GetCoverUrl(string filmUrl)
-        {
-            var content = await _ExecuteHttpRequest(filmUrl, false);
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(content);
-            var coverNode = doc.DocumentNode.SelectSingleNode("//div[@class='Grahpics']//a//img[@src]");
-
-            var src = coverNode != null
-                ? coverNode.GetAttributeValue("src", "")
-                : string.Empty;
-
-            if (string.IsNullOrEmpty(src))
-                return string.Empty;
-
-            return _PrepareUrl(src);
-        }
-
         public async Task<int> GetNumberOfEpisodes(string filmUrl, int season)
         {
             var content = await _ExecuteHttpRequest(filmUrl, false);
