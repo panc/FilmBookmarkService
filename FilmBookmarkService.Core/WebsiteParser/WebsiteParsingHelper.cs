@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace FilmBookmarkService.Core
 {
-    public class WebsiteParsingHelper
+    public static class WebsiteParsingHelper
     {
         private static readonly List<IWebsiteParser> _parsers = new List<IWebsiteParser>
         {
