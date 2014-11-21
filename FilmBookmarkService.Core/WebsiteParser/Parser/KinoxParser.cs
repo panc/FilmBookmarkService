@@ -13,8 +13,7 @@ namespace FilmBookmarkService.Core
         // Sample URL
         // http://kinox.tv/Stream/Castle.html
         
-        // private const string HOSTER_STREAMCLOUD = "30";
-        private static readonly string[] HOSTER = new[] { "54" /* VIVO */, "40" /* NOVIDEO */ };
+        private static readonly string[] HOSTER = new[] { "30" /* STREAMCLOUD */, "54" /* VIVO */, "40" /* NOVIDEO */ };
 
         private const string GET_MIRROR_URL = "http://kinox.tv/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}&Mirror={4}";
         private const string LOCKED_BASE_URL = "kinox.to";
