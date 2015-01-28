@@ -172,7 +172,7 @@ namespace FilmBookmarkService.Core
             url = url.Replace("http://www.", "")
                      .Replace("http://", "");
 
-            return url.Replace(URL_TEMPLATE, "").Replace(".html", "");
+            return _PrepareUrl(url).Replace(URL_TEMPLATE, "").Replace(".html", "");
         }
 
         private string _PrepareUrl(string url)
