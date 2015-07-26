@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -34,17 +35,8 @@ namespace FilmBookmarkService.Core
 
         public async Task<int> GetNumberOfEpisodes(string filmUrl, int season)
         {
-            var content = await _ExecuteHttpRequest(filmUrl, false);
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(content);
-            var seasonSelectionNode = doc.DocumentNode.SelectSingleNode("//select[@id='SeasonSelection']");
-            var seasonNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
-
-            var numberOfEpisodes = seasonNode
-                .GetAttributeValue("rel", "")
-                .Split(',')
-                .Last();
+            var seasonSelectionNode = await _GetSeasonSelectionNode(filmUrl);
+            var numberOfEpisodes = _GetEpisodes(seasonSelectionNode, season).Last();
 
             return Convert.ToInt32(numberOfEpisodes);
         }
@@ -92,12 +84,7 @@ namespace FilmBookmarkService.Core
 
         public async Task<bool> IsAnotherEpisodeAvailable(string filmUrl, int season, int episode)
         {
-            var content = await _ExecuteHttpRequest(filmUrl, false);
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(content);
-            var seasonSelectionNode = doc.DocumentNode.SelectSingleNode("//select[@id='SeasonSelection']");
-
+            var seasonSelectionNode = await _GetSeasonSelectionNode(filmUrl);
             var isEpisodeAvailable = _CheckNodeForEpisodeOption(seasonSelectionNode, season, episode + 1);
 
             if (!isEpisodeAvailable)
@@ -106,15 +93,36 @@ namespace FilmBookmarkService.Core
             return true;
         }
 
+        private async Task<HtmlNode> _GetSeasonSelectionNode(string filmUrl)
+        {
+            var content = await _ExecuteHttpRequest(filmUrl, false);
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var seasonSelectionNode = doc.DocumentNode.SelectSingleNode("//select[@id='SeasonSelection']");
+
+            if (seasonSelectionNode == null)
+                seasonSelectionNode = doc.DocumentNode.SelectSingleNode("//select[@id='season_select']");
+
+            return seasonSelectionNode;
+        }
+
         private bool _CheckNodeForEpisodeOption(HtmlNode seasonSelectionNode, int season, int episode)
+        {
+            var episodes = _GetEpisodes(seasonSelectionNode, season);
+
+            return episodes.Contains(episode.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private IEnumerable<string> _GetEpisodes(HtmlNode seasonSelectionNode, int season)
         {
             var optionNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
 
             var episodes = optionNode
-                .GetAttributeValue("rel", "")
+                .GetAttributeValue("data-episodes", "")
                 .Split(',');
 
-            return episodes.Contains(episode.ToString(CultureInfo.InvariantCulture));
+            return episodes;
         }
 
         private async Task<string> _GetMirror(string filmUrl, int season, int episode)
