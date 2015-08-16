@@ -27,6 +27,9 @@
                             <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
 
                             <div class="clearfix"></div>
+                            <div class="film-part mirrors">
+                                <select></select>
+                            </div>
                             <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif"/></div>
 
                             <div class="clearfix"></div>
@@ -85,6 +88,7 @@
                     editFilmUrl: "@Url.Action("EditFilm")",
                     removeFilmUrl: "@Url.Action("RemoveFilm")",
                     getStreamUrl: "@Url.Action("GetStream")",
+                    getMirrorsUrl: "@Url.Action("GetMirrors")",
                     nextEpisodeUrl: "@Url.Action("NextEpisode")",
                     prevEpisodeUrl: "@Url.Action("PrevEpisode")",
                     isAnotherEpisodeAvailableUrl: "@Url.Action("IsAnotherEpisodeAvailable")",

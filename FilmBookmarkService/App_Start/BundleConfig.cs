@@ -32,7 +32,7 @@ namespace FilmBookmarkService
                       "~/Content/site.css"));
 
             // Set EnableOptimizations to false for debugging.
-            BundleTable.EnableOptimizations = true;
+            BundleTable.EnableOptimizations = false;
         }
     }
 }

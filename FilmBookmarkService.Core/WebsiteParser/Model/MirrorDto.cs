@@ -1,6 +1,6 @@
 ﻿namespace FilmBookmarkService.Core
 {
-    public class KinoxMirrorDto
+    public class MirrorDto
     {
         public string Stream { get; set; }
 

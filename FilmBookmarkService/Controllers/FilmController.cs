@@ -44,7 +44,7 @@ namespace FilmBookmarkService.Controllers
                 Season = f.Season,
                 Episode = f.Episode,
                 IsFavorite = f.IsFavorite,
-                Url = WebProxy.DecorateUrl(f.Url),
+                Url = WebProxyHelper.DecorateUrl(f.Url),
                 UndecoratedUrl = f.Url,
                 CoverUrl = f.CoverUrl
             });
@@ -53,7 +53,7 @@ namespace FilmBookmarkService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> GetStream(int id)
+        public async Task<ActionResult> GetMirrors(int id)
         {
             try
             {
@@ -62,8 +62,36 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var streamUrl = await film.Parser.GetStreamUrl(film.Url, film.Season, film.Episode);
-                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+                var mirrors = await film.Parser.GetMirrors(film.Url, film.Season, film.Episode);
+                //var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+
+                return Json(new
+                {
+                    success = true,
+                    mirrors = mirrors,
+                    season = film.Season,
+                    episode = film.Episode,
+                    //numberOfEpisodes = numberOfEpisodes
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> GetStream(int id, string url)
+        {
+            try
+            {
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
+
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+
+                var streamUrl = await film.Parser.GetStreamUrl(film.Url, url);
+                //var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
 
                 return Json(new
                 {
@@ -71,7 +99,7 @@ namespace FilmBookmarkService.Controllers
                     streamUrl = streamUrl,
                     season = film.Season,
                     episode = film.Episode,
-                    numberOfEpisodes = numberOfEpisodes
+                    //numberOfEpisodes = numberOfEpisodes
                 });
             }
             catch (Exception ex)
@@ -177,7 +205,7 @@ namespace FilmBookmarkService.Controllers
         [HttpPost]
         public async Task<ActionResult> AddFilm(FilmViewModel model)
         {
-            var url = WebProxy.RemoveProxyDecoration(model.Url);
+            var url = WebProxyHelper.RemoveProxyDecoration(model.Url);
 
             var film = new Film
             {
@@ -206,7 +234,7 @@ namespace FilmBookmarkService.Controllers
         public async Task<ActionResult> EditFilm(int id, FilmViewModel updatedFilm)
         {
             var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
-            var url = WebProxy.RemoveProxyDecoration(updatedFilm.Url);
+            var url = WebProxyHelper.RemoveProxyDecoration(updatedFilm.Url);
 
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);

@@ -11,15 +11,14 @@ namespace FilmBookmarkService.Core
 {
     public class KinoxParser : IWebsiteParser
     {
-        // Sample URL
-        // http://kinox.tv/Stream/Castle.html
-        
         private static readonly string[] HOSTER = new[] { "30" /* STREAMCLOUD */, "54" /* VIVO */, "40" /* NOVIDEO */ };
 
-        private const string GET_MIRROR_URL = "http://kinox.tv/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}&Mirror={4}";
-        private const string LOCKED_BASE_URL = "kinox.to";
-        private const string BASE_URL = "kinox.tv";
-        private const string URL_TEMPLATE = "kinox.tv/Stream/";
+        private const string GET_HOSTER_URL = "http://kino" + "x.tv/aGET/MirrorByEpisode/?Addr={0}&Season={1}&Episode={2}";
+        private const string GET_MIRROR_URL = "http://kino" + "x.tv/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}&Mirror={4}";
+        private const string GET_URL = "http://kino" + "x.tv/aGET/Mirror/{0}";
+        private const string LOCKED_BASE_URL = "kino" + "x.to";
+        private const string BASE_URL = "kino" + "x.tv";
+        private const string URL_TEMPLATE = "kino" + "x.tv/Stream/";
 
         public Task<bool> IsCompatible(string url)
         {
@@ -41,15 +40,76 @@ namespace FilmBookmarkService.Core
             return Convert.ToInt32(numberOfEpisodes);
         }
 
-        public async Task<string> GetStreamUrl(string filmUrl, int season, int episode)
+        public async Task<string> GetStreamUrl(string filmUrl, string getMirrorUrl)
         {
-            return await _GetMirror(filmUrl, season, episode);
+            //return await _GetMirrorUrl(filmUrl, url);
+            var url = string.Format(GET_URL, getMirrorUrl).Replace("&amp;", "&");
+
+            MirrorDto mirror = null;
+            var content = await _ExecuteHttpRequest(url, true);
+
+            try
+            {
+                mirror = JsonConvert.DeserializeObject<MirrorDto>(content);
+            }
+            catch
+            {
+            }
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(mirror.Stream);
+            var node = doc.DocumentNode.SelectSingleNode("//a[@href]");
+
+            var mirrorUrl = node.Attributes["href"].Value;
+            return mirrorUrl;
+        }
+
+        public async Task<GetMirrorResult[]> GetMirrors(string filmUrl, int season, int episode)
+        {
+            var filmId = await _ParseUrlForFilmId(filmUrl);
+            var url = string.Format(GET_HOSTER_URL, filmId, season, episode);
+
+            var content = await _ExecuteHttpRequest(url, false);
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var mirrorNodes = doc.DocumentNode.SelectNodes("//li[starts-with(@id, 'Hoster_')]");
+
+            var mirrors = new List<GetMirrorResult>();
+
+            foreach (var node in mirrorNodes)
+            {
+                var mirrorsForHoster = _GetMirrorsForHoster(node, season, episode);
+                mirrors.AddRange(mirrorsForHoster);
+            }
+
+            return mirrors.ToArray();
+        }
+
+        private IEnumerable<GetMirrorResult> _GetMirrorsForHoster(HtmlNode node, int season, int episode)
+        {
+            var name = node.SelectSingleNode("div[@class='Named']").InnerHtml;
+            var link = node.GetAttributeValue("rel", "");
+
+            // get number of mirrors for this hoster
+            var mirrorInfo = node.SelectSingleNode("div[@class='Data']/text()[1]").InnerHtml; // e.g.: ": 1/2"
+
+            var separatorIndex = mirrorInfo.IndexOf("/");
+            var count = 0;
+            
+            int.TryParse(mirrorInfo.Substring(separatorIndex + 1), out count);
+
+            for (int i = 1; i <= count; i++)
+            {
+                var l = link.Replace("Mirror=2", "Mirror" + i).Replace("Mirror=1", "Mirror" + i);
+                yield return new GetMirrorResult(name + " " +  i, season, episode, l);                
+            }
         }
 
         public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)
         {
             episode++;
-            var mirror = await _GetMirror(filmUrl, season, episode);
+            var mirror = await _GetMirrorUrl(filmUrl, season, episode);
 
             if (mirror == null)
             {
@@ -58,7 +118,7 @@ namespace FilmBookmarkService.Core
                 episode = 1;
                 season++;
 
-                mirror = await _GetMirror(filmUrl, season, episode);
+                mirror = await _GetMirrorUrl(filmUrl, season, episode);
 
                 if (mirror == null)
                     return null;
@@ -74,7 +134,7 @@ namespace FilmBookmarkService.Core
             if (episode == 0)
                 throw new Exception("Start of season reached! Jumping to the previous season is not supported yet!");
 
-            var mirror = await _GetMirror(filmUrl, season, episode);
+            var mirror = await _GetMirrorUrl(filmUrl, season, episode);
 
             if (mirror == null)
                 return null;
@@ -125,17 +185,13 @@ namespace FilmBookmarkService.Core
             return episodes;
         }
 
-        private async Task<string> _GetMirror(string filmUrl, int season, int episode)
+        private async Task<string> _GetMirrorUrl(string filmUrl, int season, int episode)
         {
-            // We assume that 5 mirrors are available
-            // so we are trying to get the link to one of those 5.
-            // It's no problem if the mirror is not available, 
-            // the the service returns the default mirror (number 1).
             var mirrorNumber = new Random().Next(1, 5);
 
             var filmId = await _ParseUrlForFilmId(filmUrl);
 
-            KinoxMirrorDto mirror = null;
+            MirrorDto mirror = null;
             foreach (var h in HOSTER)
             {
                 mirror = await _RequestMirrorDto(season, episode, filmId, mirrorNumber, h);
@@ -153,10 +209,10 @@ namespace FilmBookmarkService.Core
 
             var mirrorUrl = node.Attributes["href"].Value;
 
-            return WebProxy.RemoveProxyDecoration(mirrorUrl);
+            return WebProxyHelper.RemoveProxyDecoration(mirrorUrl);
         }
 
-        private async Task<KinoxMirrorDto> _RequestMirrorDto(int season, int episode, string filmId, int mirrorNumber, string hoster)
+        private async Task<MirrorDto> _RequestMirrorDto(int season, int episode, string filmId, int mirrorNumber, string hoster)
         {
             var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode, mirrorNumber);
 
@@ -164,7 +220,7 @@ namespace FilmBookmarkService.Core
 
             try
             {
-                return JsonConvert.DeserializeObject<KinoxMirrorDto>(content);
+                return JsonConvert.DeserializeObject<MirrorDto>(content);
             }
             catch
             {
@@ -190,7 +246,7 @@ namespace FilmBookmarkService.Core
 
         private async Task<string> _ExecuteHttpRequest(string filmUrl, bool removeProxyContent)
         {
-            filmUrl = WebProxy.DecorateUrl(filmUrl);
+            //filmUrl = WebProxy.DecorateUrl(filmUrl);
 
             var url = _PrepareUrl(filmUrl);
             var client = new HttpClient();
