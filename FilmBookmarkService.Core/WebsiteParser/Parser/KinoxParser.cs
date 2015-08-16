@@ -42,7 +42,6 @@ namespace FilmBookmarkService.Core
 
         public async Task<string> GetStreamUrl(string filmUrl, string getMirrorUrl)
         {
-            //return await _GetMirrorUrl(filmUrl, url);
             var url = string.Format(GET_URL, getMirrorUrl).Replace("&amp;", "&");
 
             MirrorDto mirror = null;
@@ -89,7 +88,14 @@ namespace FilmBookmarkService.Core
         private IEnumerable<GetMirrorResult> _GetMirrorsForHoster(HtmlNode node, int season, int episode)
         {
             var name = node.SelectSingleNode("div[@class='Named']").InnerHtml;
-            var link = node.GetAttributeValue("rel", "");
+            
+            var rel = node.GetAttributeValue("rel", "");
+            var mirrorIndexInLink = rel.IndexOf("Mirror=");
+
+            // prepare link so that we only have to replace the mirror number
+            var link = (mirrorIndexInLink < 0)
+                ? rel
+                : rel.Substring(0, mirrorIndexInLink) + "Mirror={0}" + rel.Substring(mirrorIndexInLink + 9);
 
             // get number of mirrors for this hoster
             var mirrorInfo = node.SelectSingleNode("div[@class='Data']/text()[1]").InnerHtml; // e.g.: ": 1/2"
@@ -101,8 +107,9 @@ namespace FilmBookmarkService.Core
 
             for (int i = 1; i <= count; i++)
             {
-                var l = link.Replace("Mirror=2", "Mirror" + i).Replace("Mirror=1", "Mirror" + i);
-                yield return new GetMirrorResult(name + " " +  i, season, episode, l);                
+                var l = string.Format(link, i);
+                var n = string.Format("{0} {1}", name, i);
+                yield return new GetMirrorResult(n, season, episode, l);                
             }
         }
 
