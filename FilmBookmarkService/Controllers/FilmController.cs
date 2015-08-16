@@ -63,7 +63,7 @@ namespace FilmBookmarkService.Controllers
                     return _Failure("Film with id {0} not found!", id);
 
                 var mirrors = await film.Parser.GetMirrors(film.Url, film.Season, film.Episode);
-                //var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
 
                 return Json(new
                 {
@@ -71,7 +71,7 @@ namespace FilmBookmarkService.Controllers
                     mirrors = mirrors,
                     season = film.Season,
                     episode = film.Episode,
-                    //numberOfEpisodes = numberOfEpisodes
+                    numberOfEpisodes = numberOfEpisodes
                 });
             }
             catch (Exception ex)
@@ -91,15 +91,11 @@ namespace FilmBookmarkService.Controllers
                     return _Failure("Film with id {0} not found!", id);
 
                 var streamUrl = await film.Parser.GetStreamUrl(film.Url, url);
-                //var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
 
                 return Json(new
                 {
                     success = true,
                     streamUrl = streamUrl,
-                    season = film.Season,
-                    episode = film.Episode,
-                    //numberOfEpisodes = numberOfEpisodes
                 });
             }
             catch (Exception ex)
@@ -132,7 +128,7 @@ namespace FilmBookmarkService.Controllers
                 return Json(new
                 {
                     success = true,
-                    streamUrl = result.StreamUrl,
+                    mirrors = result.Mirrors,
                     season = result.Season,
                     episode = result.Episode,
                     numberOfEpisodes = numberOfEpisodes
@@ -168,7 +164,7 @@ namespace FilmBookmarkService.Controllers
                 return Json(new
                 {
                     success = true,
-                    streamUrl = result.StreamUrl,
+                    mirrors = result.Mirrors,
                     season = result.Season,
                     episode = result.Episode,
                     numberOfEpisodes = numberOfEpisodes

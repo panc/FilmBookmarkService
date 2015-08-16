@@ -11,10 +11,7 @@ namespace FilmBookmarkService.Core
 {
     public class KinoxParser : IWebsiteParser
     {
-        private static readonly string[] HOSTER = new[] { "30" /* STREAMCLOUD */, "54" /* VIVO */, "40" /* NOVIDEO */ };
-
         private const string GET_HOSTER_URL = "http://kino" + "x.tv/aGET/MirrorByEpisode/?Addr={0}&Season={1}&Episode={2}";
-        private const string GET_MIRROR_URL = "http://kino" + "x.tv/aGET/Mirror/{0}&Hoster={1}&Season={2}&Episode={3}&Mirror={4}";
         private const string GET_URL = "http://kino" + "x.tv/aGET/Mirror/{0}";
         private const string LOCKED_BASE_URL = "kino" + "x.to";
         private const string BASE_URL = "kino" + "x.tv";
@@ -116,22 +113,22 @@ namespace FilmBookmarkService.Core
         public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)
         {
             episode++;
-            var mirror = await _GetMirrorUrl(filmUrl, season, episode);
+            var mirrors = await GetMirrors(filmUrl, season, episode);
 
-            if (mirror == null)
+            if (mirrors == null || mirrors.Length == 0)
             {
                 // We reached the end of the season.
                 // Try to get the first episode for the next season.
                 episode = 1;
                 season++;
 
-                mirror = await _GetMirrorUrl(filmUrl, season, episode);
+                mirrors = await GetMirrors(filmUrl, season, episode);
 
-                if (mirror == null)
+                if (mirrors == null)
                     return null;
             }
 
-            return new GetEpisodeResult(season, episode, mirror);
+            return new GetEpisodeResult(season, episode, mirrors);
         }
 
         public async Task<GetEpisodeResult> GetPrevEpisode(string filmUrl, int season, int episode)
@@ -141,7 +138,7 @@ namespace FilmBookmarkService.Core
             if (episode == 0)
                 throw new Exception("Start of season reached! Jumping to the previous season is not supported yet!");
 
-            var mirror = await _GetMirrorUrl(filmUrl, season, episode);
+            var mirror = await GetMirrors(filmUrl, season, episode);
 
             if (mirror == null)
                 return null;
@@ -186,53 +183,10 @@ namespace FilmBookmarkService.Core
             var optionNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
 
             var episodes = optionNode
-                .GetAttributeValue("data-episodes", "")
+                .GetAttributeValue("rel", "1")
                 .Split(',');
 
             return episodes;
-        }
-
-        private async Task<string> _GetMirrorUrl(string filmUrl, int season, int episode)
-        {
-            var mirrorNumber = new Random().Next(1, 5);
-
-            var filmId = await _ParseUrlForFilmId(filmUrl);
-
-            MirrorDto mirror = null;
-            foreach (var h in HOSTER)
-            {
-                mirror = await _RequestMirrorDto(season, episode, filmId, mirrorNumber, h);
-
-                if (mirror != null)
-                    break;
-            }
-
-            if (mirror == null)
-                return null;
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(mirror.Stream);
-            var node = doc.DocumentNode.SelectSingleNode("//a[@href]");
-
-            var mirrorUrl = node.Attributes["href"].Value;
-
-            return WebProxyHelper.RemoveProxyDecoration(mirrorUrl);
-        }
-
-        private async Task<MirrorDto> _RequestMirrorDto(int season, int episode, string filmId, int mirrorNumber, string hoster)
-        {
-            var url = string.Format(GET_MIRROR_URL, filmId, hoster, season, episode, mirrorNumber);
-
-            var content = await _ExecuteHttpRequest(url, true);
-
-            try
-            {
-                return JsonConvert.DeserializeObject<MirrorDto>(content);
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         private async Task<string> _ParseUrlForFilmId(string url)
