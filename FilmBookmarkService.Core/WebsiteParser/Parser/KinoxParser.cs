@@ -40,7 +40,7 @@ namespace FilmBookmarkService.Core
 
         public async Task<string> GetStreamUrl(string filmUrl, string getMirrorUrl)
         {
-            var url = string.Format(GET_URL, HttpUtility.UrlDecode(getMirrorUrl));
+            var url = string.Format(GET_URL, HttpUtility.UrlDecode(getMirrorUrl.Replace("&amp;", "&")));
 
             MirrorDto mirror = null;
             var content = await _ExecuteHttpRequest(url);
@@ -74,6 +74,9 @@ namespace FilmBookmarkService.Core
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
             var mirrorNodes = doc.DocumentNode.SelectNodes("//li[starts-with(@id, 'Hoster_')]");
+
+            if (mirrorNodes == null)
+                return new GetMirrorResult[0];
 
             var mirrors = new List<GetMirrorResult>();
 
@@ -143,7 +146,7 @@ namespace FilmBookmarkService.Core
             // prepare link so that we only have to replace the mirror number
             var link = (mirrorIndexInLink < 0)
                 ? rel
-                : rel.Substring(0, mirrorIndexInLink) + "Mirror={0}" + rel.Substring(mirrorIndexInLink + 9);
+                : rel.Substring(0, mirrorIndexInLink) + "Mirror={0}" + rel.Substring(mirrorIndexInLink + 8);
 
             // get number of mirrors for this hoster
             var mirrorInfo = node.SelectSingleNode("div[@class='Data']/text()[1]").InnerHtml; // e.g.: ": 1/2"
