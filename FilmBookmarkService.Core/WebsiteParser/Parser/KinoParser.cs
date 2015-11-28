@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace FilmBookmarkService.Core
 {
-    public class KinoxParser : IWebsiteParser
+    public class KinoParser : IWebsiteParser
     {
         private const string GET_HOSTER_URL = "http://kino" + "x.tv/aGET/MirrorByEpisode/?Addr={0}&Season={1}&Episode={2}";
         private const string GET_URL = "http://kino" + "x.tv/aGET/Mirror/{0}";
@@ -38,9 +38,9 @@ namespace FilmBookmarkService.Core
             return Convert.ToInt32(numberOfEpisodes);
         }
 
-        public async Task<string> GetStreamUrl(string filmUrl, string getMirrorUrl)
+        public async Task<string> GetStreamUrl(string mirrorLink)
         {
-            var url = string.Format(GET_URL, HttpUtility.UrlDecode(getMirrorUrl.Replace("&amp;", "&")));
+            var url = string.Format(GET_URL, HttpUtility.UrlDecode(mirrorLink.Replace("&amp;", "&")));
 
             MirrorDto mirror = null;
             var content = await _ExecuteHttpRequest(url);
@@ -61,6 +61,11 @@ namespace FilmBookmarkService.Core
             var node = doc.DocumentNode.SelectSingleNode("//a[@href]");
 
             var mirrorUrl = node.Attributes["href"].Value;
+
+            var httpIndex = mirrorUrl.IndexOf("http://");
+            if (httpIndex > 0)
+                mirrorUrl = mirrorUrl.Substring(httpIndex);
+
             return mirrorUrl;
         }
 
@@ -159,7 +164,7 @@ namespace FilmBookmarkService.Core
             for (int i = 1; i <= count; i++)
             {
                 var l = string.Format(link, i);
-                var n = string.Format("{0} {1}", name, i);
+                var n = $"{name} {i}";
                 yield return new GetMirrorResult(n, season, episode, l);
             }
         }

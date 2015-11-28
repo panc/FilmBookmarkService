@@ -7,7 +7,7 @@ namespace FilmBookmarkService.Core
     {
         private static readonly List<IWebsiteParser> _parsers = new List<IWebsiteParser>
         {
-            new KinoxParser(),
+            new KinoParser(),
         };
 
         public static Task<IWebsiteParser> GetParser(string link)

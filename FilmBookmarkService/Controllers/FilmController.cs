@@ -90,7 +90,7 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var streamUrl = await film.Parser.GetStreamUrl(film.Url, url);
+                var streamUrl = await film.Parser.GetStreamUrl(url);
 
                 return Json(new
                 {

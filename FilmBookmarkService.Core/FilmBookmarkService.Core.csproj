@@ -56,7 +56,7 @@
     <Compile Include="WebsiteParser\Model\GetMirrorResult.cs" />
     <Compile Include="WebsiteParser\Model\GetEpisodeResult.cs" />
     <Compile Include="WebsiteParser\Parser\IWebsiteParser.cs" />
-    <Compile Include="WebsiteParser\Parser\KinoxParser.cs" />
+    <Compile Include="WebsiteParser\Parser\KinoParser.cs" />
     <Compile Include="WebsiteParser\Model\MirrorDto.cs" />
     <Compile Include="WebsiteParser\WebProxyHelper.cs" />
     <Compile Include="WebsiteParser\WebsiteParsingHelper.cs" />
