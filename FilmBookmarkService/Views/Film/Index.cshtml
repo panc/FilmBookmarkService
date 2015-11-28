@@ -18,7 +18,8 @@
                         {
                             <div class="sort"><img src="~/Content/images/grippy_large.png"/></div>
                         }
-                        
+
+                        <div class="film-part button expand-button"><span class="glyphicon glyphicon-chevron-right"></span></div>
                         <div class="film-part cover"><img src="@film.CoverUrl"/></div>
                         <div class="film-part">
                             <div class="film-part favorite"><img class="favorite-icon" width="16" src="@(film.IsFavorite ? "/Content/images/star.png" : "/Content/images/star-disabled.png")"/></div>
@@ -27,18 +28,18 @@
                             <div class="film-part button edit-button"><span class="glyphicon glyphicon-pencil"></span></div>
 
                             <div class="clearfix"></div>
-                            <div class="film-part mirrors">
-                                <select></select>
-                            </div>
+                            <div class="film-part info">-</div>
 
                             <div class="clearfix"></div>
-                            <div class="film-part info">-</div>
-                            <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif"/></div>
-
+                            <div class="film-part mirrors">
+                                <select class="mirrors-selection"></select>
+                            </div>
+                            
                             <div class="clearfix"></div>
                             <div>
-                                <div class="film-part button prev-episode-button">&lt;&nbsp; Prev</div>
-                                <div class="film-part button next-episode-button">Next &nbsp;&gt;</div>
+                                <div class="film-part button prev-episode-button control-button"><span class="glyphicon glyphicon-step-backward"></span>&nbsp;&nbsp; Prev</div>
+                                <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif" /></div>
+                                <div class="film-part button next-episode-button control-button">Next &nbsp;&nbsp;<span class="glyphicon glyphicon-step-forward"></span></div>
                             </div>
                         </div>
                     </div>

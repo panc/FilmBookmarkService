@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 
@@ -39,11 +40,11 @@ namespace FilmBookmarkService.Core
 
         public async Task<string> GetStreamUrl(string filmUrl, string getMirrorUrl)
         {
-            var url = string.Format(GET_URL, getMirrorUrl).Replace("&amp;", "&");
+            var url = string.Format(GET_URL, HttpUtility.UrlDecode(getMirrorUrl));
 
             MirrorDto mirror = null;
-            var content = await _ExecuteHttpRequest(url, true);
-
+            var content = await _ExecuteHttpRequest(url);
+            
             try
             {
                 mirror = JsonConvert.DeserializeObject<MirrorDto>(content);
@@ -51,6 +52,9 @@ namespace FilmBookmarkService.Core
             catch
             {
             }
+
+            if (mirror == null)
+                return string.Empty;
 
             var doc = new HtmlDocument();
             doc.LoadHtml(mirror.Stream);
@@ -65,7 +69,7 @@ namespace FilmBookmarkService.Core
             var filmId = await _ParseUrlForFilmId(filmUrl);
             var url = string.Format(GET_HOSTER_URL, filmId, season, episode);
 
-            var content = await _ExecuteHttpRequest(url, false);
+            var content = await _ExecuteHttpRequest(url);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
@@ -80,34 +84,6 @@ namespace FilmBookmarkService.Core
             }
 
             return mirrors.ToArray();
-        }
-
-        private IEnumerable<GetMirrorResult> _GetMirrorsForHoster(HtmlNode node, int season, int episode)
-        {
-            var name = node.SelectSingleNode("div[@class='Named']").InnerHtml;
-            
-            var rel = node.GetAttributeValue("rel", "");
-            var mirrorIndexInLink = rel.IndexOf("Mirror=");
-
-            // prepare link so that we only have to replace the mirror number
-            var link = (mirrorIndexInLink < 0)
-                ? rel
-                : rel.Substring(0, mirrorIndexInLink) + "Mirror={0}" + rel.Substring(mirrorIndexInLink + 9);
-
-            // get number of mirrors for this hoster
-            var mirrorInfo = node.SelectSingleNode("div[@class='Data']/text()[1]").InnerHtml; // e.g.: ": 1/2"
-
-            var separatorIndex = mirrorInfo.IndexOf("/");
-            var count = 0;
-            
-            int.TryParse(mirrorInfo.Substring(separatorIndex + 1), out count);
-
-            for (int i = 1; i <= count; i++)
-            {
-                var l = string.Format(link, i);
-                var n = string.Format("{0} {1}", name, i);
-                yield return new GetMirrorResult(n, season, episode, l);                
-            }
         }
 
         public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)
@@ -157,9 +133,37 @@ namespace FilmBookmarkService.Core
             return true;
         }
 
+        private IEnumerable<GetMirrorResult> _GetMirrorsForHoster(HtmlNode node, int season, int episode)
+        {
+            var name = node.SelectSingleNode("div[@class='Named']").InnerHtml;
+
+            var rel = node.GetAttributeValue("rel", "");
+            var mirrorIndexInLink = rel.IndexOf("Mirror=");
+
+            // prepare link so that we only have to replace the mirror number
+            var link = (mirrorIndexInLink < 0)
+                ? rel
+                : rel.Substring(0, mirrorIndexInLink) + "Mirror={0}" + rel.Substring(mirrorIndexInLink + 9);
+
+            // get number of mirrors for this hoster
+            var mirrorInfo = node.SelectSingleNode("div[@class='Data']/text()[1]").InnerHtml; // e.g.: ": 1/2"
+
+            var separatorIndex = mirrorInfo.IndexOf("/");
+            var count = 0;
+
+            int.TryParse(mirrorInfo.Substring(separatorIndex + 1), out count);
+
+            for (int i = 1; i <= count; i++)
+            {
+                var l = string.Format(link, i);
+                var n = string.Format("{0} {1}", name, i);
+                yield return new GetMirrorResult(n, season, episode, l);
+            }
+        }
+
         private async Task<HtmlNode> _GetSeasonSelectionNode(string filmUrl)
         {
-            var content = await _ExecuteHttpRequest(filmUrl, false);
+            var content = await _ExecuteHttpRequest(filmUrl);
 
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
@@ -205,9 +209,9 @@ namespace FilmBookmarkService.Core
             return url.Replace(LOCKED_BASE_URL, BASE_URL);
         }
 
-        private async Task<string> _ExecuteHttpRequest(string filmUrl, bool removeProxyContent)
+        private async Task<string> _ExecuteHttpRequest(string filmUrl)
         {
-            //filmUrl = WebProxy.DecorateUrl(filmUrl);
+            //filmUrl = WebProxyHelper.DecorateUrl(filmUrl);
 
             var url = _PrepareUrl(filmUrl);
             var client = new HttpClient();
@@ -216,14 +220,6 @@ namespace FilmBookmarkService.Core
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-
-            if (!removeProxyContent)
-                return content;
-
-            var styleIndex = content.IndexOf("<style", StringComparison.Ordinal);
-            if (styleIndex > 0)
-                return content.Substring(0, styleIndex);
-
             return content;
         }
     }

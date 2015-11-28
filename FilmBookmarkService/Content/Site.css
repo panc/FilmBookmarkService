@@ -71,8 +71,19 @@ div.button {
     width: 70px;
 }
 
+.film-view .mirrors-selection {
+    padding: 5px;
+    margin-top: 20px;
+}
+
+.film-view .control-button {
+    padding: 20px
+}
+
 .film-view .stream {
-    width: 215px;
+    margin-top: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .film-view .indicator {
@@ -81,6 +92,14 @@ div.button {
     height: 10px;
     background-color: #88df64;
     border-radius: 5px;
+}
+
+.film-view .stream .loading-indicator {
+    background-image: url("images/ajax-loader.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 101px;
+    height: 30px;
 }
 
 .film-view .film-part .button {
@@ -98,6 +117,11 @@ div.button {
 
 .film-view .edit-button {
     display: none;
+}
+
+.film-view .expand-button {
+    display: block;
+    color: #428bca;
 }
 
 .film:hover > .film-view .edit-button {
