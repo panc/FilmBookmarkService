@@ -11,7 +11,7 @@
         <div class="films">
             @foreach (var film in Model)
             {
-                <div class="film clearfix" id="@film.Id">
+                <div class="film clearfix" id="@film.Id" data-is-expanded="false">
 
                     <div class="film-view">
                         @if (ViewBag.CanChangeSortIndex)
@@ -30,17 +30,19 @@
                             <div class="clearfix"></div>
                             <div class="film-part info">-</div>
 
-                            <div class="clearfix"></div>
-                            <div class="film-part mirrors">
-                                <select class="mirrors-selection"></select>
-                            </div>
-                            
-                            <div class="clearfix"></div>
-                            <div>
-                                <div class="film-part button prev-episode-button control-button"><span class="glyphicon glyphicon-step-backward"></span>&nbsp;&nbsp; Prev</div>
-                                <div class="film-part stream"><img src="~/Content/images/ajax-loader.gif" /></div>
-                                <div class="film-part button next-episode-button control-button">Next &nbsp;&nbsp;<span class="glyphicon glyphicon-step-forward"></span></div>
-                            </div>
+                            <div class="film-details" style="display: none">
+                                <div class="clearfix"></div>
+                                <div class="film-part mirrors">
+                                    <select class="mirrors-selection"></select>
+                                </div>
+
+                                <div class="clearfix"></div>
+                                <div>
+                                    <div class="film-part button prev-episode-button control-button"><span class="glyphicon glyphicon-step-backward"></span>&nbsp;&nbsp; Prev</div>
+                                    <div class="film-part stream"><div class="loading-indicator"></div></div>
+                                    <div class="film-part button next-episode-button control-button">Next &nbsp;&nbsp;<span class="glyphicon glyphicon-step-forward"></span></div>
+                                </div>
+                            </div>    
                         </div>
                     </div>
 

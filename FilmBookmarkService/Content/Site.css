@@ -68,7 +68,7 @@ div.button {
 }
 
 .film-view .cover img {
-    width: 70px;
+    height: 70px;
 }
 
 .film-view .mirrors-selection {
@@ -120,8 +120,8 @@ div.button {
 }
 
 .film-view .expand-button {
-    display: block;
     color: #428bca;
+    padding: 20px;
 }
 
 .film:hover > .film-view .edit-button {
