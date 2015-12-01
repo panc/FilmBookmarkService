@@ -48,6 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStore\Model\Settings.cs" />
+    <Compile Include="DataStore\SettingsStore.cs" />
     <Compile Include="DataStore\FilmStore.cs" />
     <Compile Include="DataStore\Model\User.cs" />
     <Compile Include="DataStore\UserStore.cs" />
