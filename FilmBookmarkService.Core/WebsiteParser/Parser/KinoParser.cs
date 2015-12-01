@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -221,9 +222,15 @@ namespace FilmBookmarkService.Core
         {
             //filmUrl = WebProxyHelper.DecorateUrl(filmUrl);
 
-            var url = _PrepareUrl(filmUrl);
-            var client = new HttpClient();
+            var handler = new HttpClientHandler
+            {
+                UseProxy = true,
+                Proxy = new WebProxy("http://108.162.206.233", false)
+            };
 
+            var url = _PrepareUrl(filmUrl);
+            var client = new HttpClient(handler);
+            
             var response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
 

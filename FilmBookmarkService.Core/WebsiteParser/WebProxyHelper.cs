@@ -9,7 +9,7 @@ namespace FilmBookmarkService.Core
         public static string DecorateUrl(string url)
         {
             url = HttpUtility.UrlEncode(url);
-            return string.Format("{0}{1}", PROXY_URL, url);
+            return $"{PROXY_URL}{url}";
         }
 
         public static string RemoveProxyDecoration(string url)
