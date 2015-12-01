@@ -11,19 +11,22 @@ namespace FilmBookmarkService.Core
     {
         private const string FILE_NAME = "films.{0}.json";
 
+        public static FilmStore Create(string appDataPath, string postFix)
+        {
+            return new FilmStore(appDataPath, postFix);
+        }
+
+
         private readonly string _filePath;
         private readonly Lazy<List<Film>> _films;
 
-        public FilmStore(string appDataPath, string postFix)
+        private FilmStore(string appDataPath, string postFix)
         {
             _films = new Lazy<List<Film>>(_ReadFilmsFromFile);
             _filePath = Path.Combine(appDataPath, string.Format(FILE_NAME, postFix));
         }
 
-        public Film[] Films
-        {
-            get { return _films.Value.ToArray(); }
-        }
+        public Film[] Films => _films.Value.ToArray();
 
         public void AddFilm(Film film)
         {
@@ -53,11 +56,6 @@ namespace FilmBookmarkService.Core
 
             var content = File.ReadAllText(_filePath);
             return JsonConvert.DeserializeObject<List<Film>>(content) ?? new List<Film>();
-        }
-
-        public static FilmStore Create(string appDataPath, string postFix)
-        {
-            return new FilmStore(appDataPath, postFix);
         }
 
         public void Dispose()

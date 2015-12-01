@@ -6,22 +6,20 @@ namespace FilmBookmarkService.Core
 {
     public class UserStore :IDisposable
     {
-        private readonly Lazy<User[]> _users; 
-
-        public UserStore()
-        {
-            _users = new Lazy<User[]>(_ParseConfigFile);
-        }
-
-        public User[] Users
-        {
-            get { return _users.Value; }
-        }
-
         public static UserStore Create()
         {
             return new UserStore();
         }
+
+
+        private readonly Lazy<User[]> _users;
+
+        private UserStore()
+        {
+            _users = new Lazy<User[]>(_ParseConfigFile);
+        }
+
+        public User[] Users => _users.Value;
 
         public void Dispose()
         {    
