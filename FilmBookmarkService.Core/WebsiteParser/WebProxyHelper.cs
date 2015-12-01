@@ -14,6 +14,9 @@ namespace FilmBookmarkService.Core
 
         public static string RemoveProxyDecoration(string url)
         {
+            if (string.IsNullOrEmpty(url))
+                return url;
+
             return url.Replace(PROXY_URL, string.Empty);
         }
     }
