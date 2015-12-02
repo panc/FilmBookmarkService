@@ -2,7 +2,7 @@
 {
     public class Settings
     {
-        public string ProxyAdress { get; set; }
+        public string ProxyAddress { get; set; }
 
         public bool UseProxy { get; set; }
     }

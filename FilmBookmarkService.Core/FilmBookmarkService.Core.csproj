@@ -61,7 +61,7 @@
     <Compile Include="WebsiteParser\Parser\KinoParser.cs" />
     <Compile Include="WebsiteParser\Model\MirrorDto.cs" />
     <Compile Include="WebsiteParser\WebProxyHelper.cs" />
-    <Compile Include="WebsiteParser\WebsiteParsingHelper.cs" />
+    <Compile Include="WebsiteParser\WebsiteParserFactory.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

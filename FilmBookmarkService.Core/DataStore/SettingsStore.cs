@@ -7,20 +7,25 @@ namespace FilmBookmarkService.Core
 {
     public class SettingsStore : IDisposable
     {
-        private const string FILE_NAME = "settings.{0}.json";
+        private const string FILE_NAME = "settings.json";
 
-        public static SettingsStore Create(string appDataPath, string postFix)
+        private static SettingsStore _instance;
+
+        public static SettingsStore Create(string appDataPath)
         {
-            return new SettingsStore(appDataPath, postFix);
+            if (_instance == null)
+                _instance = new SettingsStore(appDataPath);
+
+            return _instance;
         }
 
 
         private readonly string _filePath;
         private readonly Lazy<Settings> _settings;
 
-        private SettingsStore(string appDataPath, string postFix)
+        private SettingsStore(string appDataPath)
         {
-            _filePath = Path.Combine(appDataPath, string.Format(FILE_NAME, postFix));
+            _filePath = Path.Combine(appDataPath, FILE_NAME);
             _settings = new Lazy<Settings>(_ReadSettingsFromFile);
         }
 

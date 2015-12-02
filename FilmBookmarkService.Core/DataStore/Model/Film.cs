@@ -1,7 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
-
-namespace FilmBookmarkService.Core
+﻿namespace FilmBookmarkService.Core
 {
     public class Film
     {
@@ -22,27 +19,5 @@ namespace FilmBookmarkService.Core
         public int Episode { get; set; }
 
         public bool IsFavorite { get; set; }
-        
-        public string ParserType { get; set; }
-
-        [JsonIgnore]
-        public IWebsiteParser Parser
-        {
-            get
-            {
-                if (_parser == null)
-                {
-                    var type = Type.GetType(ParserType);
-                    _parser = Activator.CreateInstance(type) as IWebsiteParser;
-                }
-
-                return _parser;
-            }
-        }
-
-        public void SetParser(IWebsiteParser parser)
-        {
-            ParserType = parser.GetType().FullName;
-        }
     }
 }

@@ -11,9 +11,18 @@ namespace FilmBookmarkService.Core
     {
         private const string FILE_NAME = "films.{0}.json";
 
+        private static readonly Dictionary<string, FilmStore> _cache = new Dictionary<string, FilmStore>(); 
+
         public static FilmStore Create(string appDataPath, string postFix)
         {
-            return new FilmStore(appDataPath, postFix);
+            FilmStore store;
+            if (_cache.TryGetValue(postFix, out store))
+                return store;
+            
+            store = new FilmStore(appDataPath, postFix);
+            _cache.Add(postFix, store);
+
+            return store;
         }
 
 

@@ -10,22 +10,29 @@ namespace FilmBookmarkService.Controllers
     [Authorize]
     public class FilmController : Controller
     {
-        private readonly Lazy<FilmStore> _dataStore;
+        private readonly Lazy<FilmStore> _lazyFilmStore;
+        private readonly Lazy<WebsiteParserFactory> _lazyParserFactory;
 
         public FilmController()
         {
-            _dataStore = new Lazy<FilmStore>(() =>
+            _lazyFilmStore = new Lazy<FilmStore>(() =>
             {
                 var appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString(); ;
                 var user = HttpContext.User.Identity.GetUserName();
                 return FilmStore.Create(appDataPath, user);
             });
+
+            _lazyParserFactory = new Lazy<WebsiteParserFactory>(() =>
+            {
+                var appDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString(); ;
+                var settingsStore = SettingsStore.Create(appDataPath);
+                
+                return new WebsiteParserFactory(settingsStore.Settings.UseProxy, settingsStore.Settings.ProxyAddress);
+            });
         }
 
-        private FilmStore FilmStore
-        {
-            get { return _dataStore.Value; }
-        }
+        private FilmStore FilmStore => _lazyFilmStore.Value;
+        private WebsiteParserFactory WebsiteParserFactory => _lazyParserFactory.Value;
 
         public ActionResult Index(bool allFilms = false)
         {
@@ -62,8 +69,9 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var mirrors = await film.Parser.GetMirrors(film.Url, film.Season, film.Episode);
-                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var mirrors = await parser.GetMirrors(film.Url, film.Season, film.Episode);
+                var numberOfEpisodes = await parser.GetNumberOfEpisodes(film.Url, film.Season);
 
                 return Json(new
                 {
@@ -90,7 +98,8 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var streamUrl = await film.Parser.GetStreamUrl(url);
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var streamUrl = await parser.GetStreamUrl(url);
 
                 return Json(new
                 {
@@ -114,7 +123,8 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var result = await film.Parser.GetNextEpisode(film.Url, film.Season, film.Episode);
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var result = await parser.GetNextEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
                     return _Failure("No more episodes available!");
@@ -123,7 +133,7 @@ namespace FilmBookmarkService.Controllers
                 film.Episode = result.Episode;
                 await FilmStore.SaveChangesAsync();
 
-                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+                var numberOfEpisodes = await parser.GetNumberOfEpisodes(film.Url, film.Season);
 
                 return Json(new
                 {
@@ -150,7 +160,8 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var result = await film.Parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var result = await parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
 
                 if (result == null)
                     return _Failure("No more episodes for the configured streaming service available!");
@@ -159,7 +170,7 @@ namespace FilmBookmarkService.Controllers
                 film.Episode = result.Episode;
                 await FilmStore.SaveChangesAsync();
 
-                var numberOfEpisodes = await film.Parser.GetNumberOfEpisodes(film.Url, film.Season);
+                var numberOfEpisodes = await parser.GetNumberOfEpisodes(film.Url, film.Season);
 
                 return Json(new
                 {
@@ -186,7 +197,8 @@ namespace FilmBookmarkService.Controllers
                 if (film == null)
                     return _Failure("Film with id {0} not found!", id);
 
-                var isAnotherEpisodeAvailable = await film.Parser.IsAnotherEpisodeAvailable(film.Url, film.Season, film.Episode);
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var isAnotherEpisodeAvailable = await parser.IsAnotherEpisodeAvailable(film.Url, film.Season, film.Episode);
                 
                 return isAnotherEpisodeAvailable
                     ? _Success()
@@ -213,12 +225,11 @@ namespace FilmBookmarkService.Controllers
                 IsFavorite = model.IsFavorite
             };
 
-            var parser = await WebsiteParsingHelper.GetParser(url);
+            var parser = await WebsiteParserFactory.CreateParserForUrl(url);
             if (parser == null)
                 return _Failure("No parser found for {0}!", url);
 
             film.IsFavorite = true;
-            film.SetParser(parser);
 
             FilmStore.AddFilm(film);
             await FilmStore.SaveChangesAsync();
@@ -235,7 +246,7 @@ namespace FilmBookmarkService.Controllers
             if (film == null)
                 return _Failure("Film with id {0} not found!", id);
 
-            var parser = await WebsiteParsingHelper.GetParser(url);
+            var parser = await WebsiteParserFactory.CreateParserForUrl(url);
             if (parser == null)
                 return _Failure("No parser found for {0}!", url);
 
@@ -244,8 +255,6 @@ namespace FilmBookmarkService.Controllers
             film.Season = updatedFilm.Season;
             film.Episode = updatedFilm.Episode;
             film.CoverUrl = updatedFilm.CoverUrl;
-
-            film.SetParser(parser);
 
             await FilmStore.SaveChangesAsync();
 

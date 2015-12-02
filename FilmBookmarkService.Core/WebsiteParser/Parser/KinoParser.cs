@@ -13,6 +13,15 @@ namespace FilmBookmarkService.Core
 {
     public class KinoParser : IWebsiteParser
     {
+        private readonly bool _useProxy;
+        private readonly string _proxyAddress;
+
+        public KinoParser(bool useProxy, string proxyAddress)
+        {
+            _useProxy = useProxy;
+            _proxyAddress = proxyAddress;
+        }
+
         private const string GET_HOSTER_URL = "http://kino" + "x.tv/aGET/MirrorByEpisode/?Addr={0}&Season={1}&Episode={2}";
         private const string GET_URL = "http://kino" + "x.tv/aGET/Mirror/{0}";
         private const string LOCKED_BASE_URL = "kino" + "x.to";
@@ -220,17 +229,16 @@ namespace FilmBookmarkService.Core
 
         private async Task<string> _ExecuteHttpRequest(string filmUrl)
         {
-            //filmUrl = WebProxyHelper.DecorateUrl(filmUrl);
-
-            var handler = new HttpClientHandler
-            {
-                UseProxy = true,
-                Proxy = new WebProxy("http://108.162.206.233", false)
-            };
-
-            var url = _PrepareUrl(filmUrl);
-            var client = new HttpClient(handler);
+            var client = !_useProxy
+                ? new HttpClient()
+                : new HttpClient(new HttpClientHandler
+                {
+                    UseProxy = true,
+                    Proxy = new WebProxy(_proxyAddress, false)
+                });
             
+            var url = _PrepareUrl(filmUrl);
+
             var response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
