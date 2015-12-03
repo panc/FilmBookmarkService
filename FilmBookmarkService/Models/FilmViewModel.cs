@@ -1,4 +1,4 @@
-﻿namespace FilmBookmarkService
+﻿namespace FilmBookmarkService.Models
 {
     public class FilmViewModel
     {

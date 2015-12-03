@@ -1,4 +1,6 @@
-﻿@model List<FilmViewModel>
+﻿@using FilmBookmarkService.Models
+
+@model List<FilmViewModel>
 
 <div class="playlist clearfix">
     <a class="left playlist-item @ViewBag.FavoritesClass" href="@Url.Action("Index")">Favorites</a>

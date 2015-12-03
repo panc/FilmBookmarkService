@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using FilmBookmarkService.Core;
+using FilmBookmarkService.Models;
 using Microsoft.AspNet.Identity;
 
 namespace FilmBookmarkService.Controllers

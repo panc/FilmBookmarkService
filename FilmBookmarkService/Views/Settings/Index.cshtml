@@ -1,0 +1,56 @@
+﻿@using FilmBookmarkService.Models
+
+@model SettingsViewModel
+@{
+    ViewBag.Title = "Settings";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <section id="loginForm">
+            @using (Html.BeginForm("Index", "Settings", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <h4>Change Proxy Settings for all server side web requests.</h4>
+                <div class="help-block">
+                    List of proxies: <a target="_blank" href="https://incloak.com/proxy-list/">https://incloak.com/proxy-list/</a>
+                </div>
+    
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(m => m.UseProxy, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.CheckBoxFor(m => m.UseProxy, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.UseProxy, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.ProxyAddress, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.TextBoxFor(m => m.ProxyAddress, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.ProxyAddress, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-1">
+                        <input type="submit" value="Save" class="btn btn-default"/>
+                    </div>
+
+                    @if (ViewBag.Success)
+                    {
+                        <div class="col-md-3 text-success" style="margin-top: 7px; margin-left: 15px;">
+                            Successfully Saved!
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
