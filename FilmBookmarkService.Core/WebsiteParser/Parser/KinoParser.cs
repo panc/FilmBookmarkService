@@ -40,14 +40,6 @@ namespace FilmBookmarkService.Core
             });
         }
 
-        public async Task<int> GetNumberOfEpisodes(string filmUrl, int season)
-        {
-            var seasonSelectionNode = await _GetSeasonSelectionNode(filmUrl);
-            var numberOfEpisodes = _GetEpisodes(seasonSelectionNode, season).Last();
-
-            return Convert.ToInt32(numberOfEpisodes);
-        }
-
         public async Task<string> GetStreamUrl(string mirrorLink)
         {
             var url = string.Format(GET_URL, HttpUtility.UrlDecode(mirrorLink.Replace("&amp;", "&")));
@@ -79,7 +71,60 @@ namespace FilmBookmarkService.Core
             return mirrorUrl;
         }
 
-        public async Task<GetMirrorResult[]> GetMirrors(string filmUrl, int season, int episode)
+        public async Task<EpisodeInfo> GetEpisodeInfo(string filmUrl, int season, int episode)
+        {
+            var mirrors = await _GetMirrors(filmUrl, season, episode);
+
+            return await _GetEpisodeInfo(filmUrl, season, episode, mirrors);
+        }
+
+        public async Task<EpisodeInfo> GetInfoForNextEpisode(string filmUrl, int season, int episode)
+        {
+            episode++;
+            var mirrors = await _GetMirrors(filmUrl, season, episode);
+
+            if (mirrors == null || mirrors.Length == 0)
+            {
+                // We reached the end of the season.
+                // Try to get the first episode for the next season.
+                episode = 1;
+                season++;
+
+                mirrors = await _GetMirrors(filmUrl, season, episode);
+
+                if (mirrors == null)
+                    return null;
+            }
+
+            return await _GetEpisodeInfo(filmUrl, season, episode, mirrors);
+        }
+
+        public async Task<EpisodeInfo> GetInfoForPreviousEpisode(string filmUrl, int season, int episode)
+        {
+            episode--;
+
+            if (episode == 0)
+                throw new Exception("Start of season reached! Jumping to the previous season is not supported yet!");
+
+            var mirrors = await _GetMirrors(filmUrl, season, episode);
+
+            if (mirrors == null)
+                return null;
+
+            return await _GetEpisodeInfo(filmUrl, season, episode, mirrors);
+        }
+
+        private async Task<EpisodeInfo> _GetEpisodeInfo(string filmUrl, int season, int episode, MirrorInfo[] mirrors)
+        {
+            var seasonSelectionNode = await _GetSeasonSelectionNode(filmUrl);
+
+            var numberOfEpisodes = _GetNumberOfEpisodes(seasonSelectionNode, season);
+            var isEpisodeAvailable = _CheckIsEpisodeAvailable(seasonSelectionNode, season, episode);
+
+            return new EpisodeInfo(season, episode, mirrors, numberOfEpisodes, isEpisodeAvailable);
+        }
+
+        private async Task<MirrorInfo[]> _GetMirrors(string filmUrl, int season, int episode)
         {
             var filmId = await _ParseUrlForFilmId(filmUrl);
             var url = string.Format(GET_HOSTER_URL, filmId, season, episode);
@@ -91,9 +136,9 @@ namespace FilmBookmarkService.Core
             var mirrorNodes = doc.DocumentNode.SelectNodes("//li[starts-with(@id, 'Hoster_')]");
 
             if (mirrorNodes == null)
-                return new GetMirrorResult[0];
+                return new MirrorInfo[0];
 
-            var mirrors = new List<GetMirrorResult>();
+            var mirrors = new List<MirrorInfo>();
 
             foreach (var node in mirrorNodes)
             {
@@ -104,54 +149,7 @@ namespace FilmBookmarkService.Core
             return mirrors.ToArray();
         }
 
-        public async Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode)
-        {
-            episode++;
-            var mirrors = await GetMirrors(filmUrl, season, episode);
-
-            if (mirrors == null || mirrors.Length == 0)
-            {
-                // We reached the end of the season.
-                // Try to get the first episode for the next season.
-                episode = 1;
-                season++;
-
-                mirrors = await GetMirrors(filmUrl, season, episode);
-
-                if (mirrors == null)
-                    return null;
-            }
-
-            return new GetEpisodeResult(season, episode, mirrors);
-        }
-
-        public async Task<GetEpisodeResult> GetPrevEpisode(string filmUrl, int season, int episode)
-        {
-            episode--;
-
-            if (episode == 0)
-                throw new Exception("Start of season reached! Jumping to the previous season is not supported yet!");
-
-            var mirror = await GetMirrors(filmUrl, season, episode);
-
-            if (mirror == null)
-                return null;
-
-            return new GetEpisodeResult(season, episode, mirror);
-        }
-
-        public async Task<bool> IsAnotherEpisodeAvailable(string filmUrl, int season, int episode)
-        {
-            var seasonSelectionNode = await _GetSeasonSelectionNode(filmUrl);
-            var isEpisodeAvailable = _CheckNodeForEpisodeOption(seasonSelectionNode, season, episode + 1);
-
-            if (!isEpisodeAvailable)
-                return _CheckNodeForEpisodeOption(seasonSelectionNode, season + 1, 1);
-
-            return true;
-        }
-
-        private IEnumerable<GetMirrorResult> _GetMirrorsForHoster(HtmlNode node, int season, int episode)
+        private IEnumerable<MirrorInfo> _GetMirrorsForHoster(HtmlNode node, int season, int episode)
         {
             var name = node.SelectSingleNode("div[@class='Named']").InnerHtml;
 
@@ -175,7 +173,7 @@ namespace FilmBookmarkService.Core
             {
                 var l = string.Format(link, i);
                 var n = $"{name} {i}";
-                yield return new GetMirrorResult(n, season, episode, l);
+                yield return new MirrorInfo(n, season, episode, l);
             }
         }
 
@@ -193,6 +191,16 @@ namespace FilmBookmarkService.Core
             return seasonSelectionNode;
         }
 
+        private bool _CheckIsEpisodeAvailable(HtmlNode seasonSelectionNode, int season, int episode)
+        {
+            var isEpisodeAvailable = _CheckNodeForEpisodeOption(seasonSelectionNode, season, episode + 1);
+
+            if (!isEpisodeAvailable)
+                return _CheckNodeForEpisodeOption(seasonSelectionNode, season + 1, 1);
+
+            return true;
+        }
+
         private bool _CheckNodeForEpisodeOption(HtmlNode seasonSelectionNode, int season, int episode)
         {
             var episodes = _GetEpisodes(seasonSelectionNode, season);
@@ -200,12 +208,21 @@ namespace FilmBookmarkService.Core
             return episodes.Contains(episode.ToString(CultureInfo.InvariantCulture));
         }
 
+        private int _GetNumberOfEpisodes(HtmlNode seasonSelectionNode, int season)
+        {
+            var lastEpisode = _GetEpisodes(seasonSelectionNode, season).Last();
+            return Convert.ToInt32(lastEpisode);
+        }
+
         private IEnumerable<string> _GetEpisodes(HtmlNode seasonSelectionNode, int season)
         {
             var optionNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
 
+            if (optionNode == null)
+                return new string[0];
+
             var episodes = optionNode
-                .GetAttributeValue("rel", "1")
+                .GetAttributeValue("rel", "0")
                 .Split(',');
 
             return episodes;

@@ -33,6 +33,7 @@ namespace FilmBookmarkService.Controllers
         }
 
         private FilmStore FilmStore => _lazyFilmStore.Value;
+
         private WebsiteParserFactory WebsiteParserFactory => _lazyParserFactory.Value;
 
         public ActionResult Index(bool allFilms = false)
@@ -71,16 +72,88 @@ namespace FilmBookmarkService.Controllers
                     return _Failure("Film with id {0} not found!", id);
 
                 var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
-                var mirrors = await parser.GetMirrors(film.Url, film.Season, film.Episode);
-                var numberOfEpisodes = await parser.GetNumberOfEpisodes(film.Url, film.Season);
+                var episodeInfo = await parser.GetEpisodeInfo(film.Url, film.Season, film.Episode);
 
                 return Json(new
                 {
                     success = true,
-                    mirrors = mirrors,
-                    season = film.Season,
-                    episode = film.Episode,
-                    numberOfEpisodes = numberOfEpisodes
+                    mirrors = episodeInfo.Mirrors,
+                    season = episodeInfo.Season,
+                    episode = episodeInfo.Episode,
+                    numberOfEpisodes = episodeInfo.NumberOfEpisodes,
+                    isAnotherEpisodeAvailable = episodeInfo.IsAnotherEpisodeAvailable
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> NextEpisode(int id)
+        {
+            try
+            {
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
+
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var episodeInfo = await parser.GetInfoForNextEpisode(film.Url, film.Season, film.Episode);
+
+                if (episodeInfo == null)
+                    return _Failure("No more episodes available!");
+
+                film.Season = episodeInfo.Season;
+                film.Episode = episodeInfo.Episode;
+                await FilmStore.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    mirrors = episodeInfo.Mirrors,
+                    season = episodeInfo.Season,
+                    episode = episodeInfo.Episode,
+                    numberOfEpisodes = episodeInfo.NumberOfEpisodes,
+                    isAnotherEpisodeAvailable = episodeInfo.IsAnotherEpisodeAvailable
+                });
+            }
+            catch (Exception ex)
+            {
+                return _Failure(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PrevEpisode(int id)
+        {
+            try
+            {
+                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
+
+                if (film == null)
+                    return _Failure("Film with id {0} not found!", id);
+
+                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
+                var episodeInfo = await parser.GetInfoForPreviousEpisode(film.Url, film.Season, film.Episode);
+
+                if (episodeInfo == null)
+                    return _Failure("No more episodes for the configured streaming service available!");
+
+                film.Season = episodeInfo.Season;
+                film.Episode = episodeInfo.Episode;
+                await FilmStore.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    mirrors = episodeInfo.Mirrors,
+                    season = episodeInfo.Season,
+                    episode = episodeInfo.Episode,
+                    numberOfEpisodes = episodeInfo.NumberOfEpisodes,
+                    isAnotherEpisodeAvailable = episodeInfo.IsAnotherEpisodeAvailable
                 });
             }
             catch (Exception ex)
@@ -107,103 +180,6 @@ namespace FilmBookmarkService.Controllers
                     success = true,
                     streamUrl = streamUrl,
                 });
-            }
-            catch (Exception ex)
-            {
-                return _Failure(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        public async Task<ActionResult> NextEpisode(int id)
-        {
-            try
-            {
-                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
-
-                if (film == null)
-                    return _Failure("Film with id {0} not found!", id);
-
-                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
-                var result = await parser.GetNextEpisode(film.Url, film.Season, film.Episode);
-
-                if (result == null)
-                    return _Failure("No more episodes available!");
-
-                film.Season = result.Season;
-                film.Episode = result.Episode;
-                await FilmStore.SaveChangesAsync();
-
-                var numberOfEpisodes = await parser.GetNumberOfEpisodes(film.Url, film.Season);
-
-                return Json(new
-                {
-                    success = true,
-                    mirrors = result.Mirrors,
-                    season = result.Season,
-                    episode = result.Episode,
-                    numberOfEpisodes = numberOfEpisodes
-                });
-            }
-            catch (Exception ex)
-            {
-                return _Failure(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        public async Task<ActionResult> PrevEpisode(int id)
-        {
-            try
-            {
-                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
-
-                if (film == null)
-                    return _Failure("Film with id {0} not found!", id);
-
-                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
-                var result = await parser.GetPrevEpisode(film.Url, film.Season, film.Episode);
-
-                if (result == null)
-                    return _Failure("No more episodes for the configured streaming service available!");
-
-                film.Season = result.Season;
-                film.Episode = result.Episode;
-                await FilmStore.SaveChangesAsync();
-
-                var numberOfEpisodes = await parser.GetNumberOfEpisodes(film.Url, film.Season);
-
-                return Json(new
-                {
-                    success = true,
-                    mirrors = result.Mirrors,
-                    season = result.Season,
-                    episode = result.Episode,
-                    numberOfEpisodes = numberOfEpisodes
-                });
-            }
-            catch (Exception ex)
-            {
-                return _Failure(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        public async Task<ActionResult> IsAnotherEpisodeAvailable(int id)
-        {
-            try
-            {
-                var film = FilmStore.Films.SingleOrDefault(x => x.Id == id);
-
-                if (film == null)
-                    return _Failure("Film with id {0} not found!", id);
-
-                var parser = await WebsiteParserFactory.CreateParserForUrl(film.Url);
-                var isAnotherEpisodeAvailable = await parser.IsAnotherEpisodeAvailable(film.Url, film.Season, film.Episode);
-                
-                return isAnotherEpisodeAvailable
-                    ? _Success()
-                    : _Failure("");
             }
             catch (Exception ex)
             {

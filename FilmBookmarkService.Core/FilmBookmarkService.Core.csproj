@@ -55,8 +55,8 @@
     <Compile Include="DataStore\UserStore.cs" />
     <Compile Include="DataStore\Model\Film.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebsiteParser\Model\GetMirrorResult.cs" />
-    <Compile Include="WebsiteParser\Model\GetEpisodeResult.cs" />
+    <Compile Include="WebsiteParser\Model\MirrorInfo.cs" />
+    <Compile Include="WebsiteParser\Model\EpisodeInfo.cs" />
     <Compile Include="WebsiteParser\Parser\IWebsiteParser.cs" />
     <Compile Include="WebsiteParser\Parser\KinoParser.cs" />
     <Compile Include="WebsiteParser\Model\MirrorDto.cs" />

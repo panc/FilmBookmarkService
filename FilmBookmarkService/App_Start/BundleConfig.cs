@@ -1,4 +1,5 @@
-﻿using System.Web.Optimization;
+﻿using System.Diagnostics;
+using System.Web.Optimization;
 
 namespace FilmBookmarkService
 {
@@ -32,7 +33,7 @@ namespace FilmBookmarkService
                       "~/Content/site.css"));
 
             // Set EnableOptimizations to false for debugging.
-            BundleTable.EnableOptimizations = false;
+            BundleTable.EnableOptimizations = Debugger.IsAttached == false;
         }
     }
 }

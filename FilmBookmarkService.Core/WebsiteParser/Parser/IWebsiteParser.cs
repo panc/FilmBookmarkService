@@ -8,14 +8,10 @@ namespace FilmBookmarkService.Core
 
         Task<string> GetStreamUrl(string mirrorLink);
 
-        Task<int> GetNumberOfEpisodes(string filmUrl, int season);
+        Task<EpisodeInfo> GetInfoForNextEpisode(string filmUrl, int season, int episode);
 
-        Task<GetEpisodeResult> GetNextEpisode(string filmUrl, int season, int episode);
-
-        Task<GetEpisodeResult> GetPrevEpisode(string filmUrl, int season, int episode);
+        Task<EpisodeInfo> GetInfoForPreviousEpisode(string filmUrl, int season, int episode);
         
-        Task<bool> IsAnotherEpisodeAvailable(string filmUrl, int season, int episode);
-        
-        Task<GetMirrorResult[]> GetMirrors(string url, int season, int episode);
+        Task<EpisodeInfo> GetEpisodeInfo(string filmUrl, int season, int episode);
     }
 }
