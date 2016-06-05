@@ -39,7 +39,10 @@ namespace FilmBookmarkService.Core
 
         public void AddFilm(Film film)
         {
-            film.Id = _films.Value.Max(x => x.Id) + 1;
+            film.Id = _films.Value.Count > 0 
+                ? _films.Value.Max(x => x.Id) + 1
+                : 1;
+
             film.SortIndex = film.Id + 1;
             _films.Value.Add(film);
         }
