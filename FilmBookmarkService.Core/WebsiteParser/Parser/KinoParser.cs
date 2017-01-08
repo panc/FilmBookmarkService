@@ -19,7 +19,7 @@ namespace FilmBookmarkService.Core
         private const string GET_URL = "http://" + BASE_URL + "/aGET/Mirror/{0}";
         private const string URL_TEMPLATE = BASE_URL + "/Stream/";
 
-        private static readonly string[] DOMAINS = {"ag", "am", "me", "nu", "pe", "sg", "tv"};
+        private static readonly string[] Domains = { "ag", "am", "me", "nu", "pe", "sg", "tv" };
 
         private readonly bool _useProxy;
         private readonly string _proxyAddress;
@@ -29,14 +29,13 @@ namespace FilmBookmarkService.Core
             _useProxy = useProxy;
             _proxyAddress = proxyAddress;
         }
-        
+
         public Task<bool> IsCompatible(string url)
         {
             return Task.Factory.StartNew(() =>
             {
                 url = _PrepareUrl(url);
-                url = url.Replace("http://www.", "")
-                         .Replace("http://", "");
+                url = _RemoveProtocol(url);
 
                 return !string.IsNullOrEmpty(url) && url.StartsWith(URL_TEMPLATE);
             });
@@ -48,13 +47,14 @@ namespace FilmBookmarkService.Core
 
             MirrorDto mirror = null;
             var content = await _ExecuteHttpRequest(url);
-            
+
             try
             {
                 mirror = JsonConvert.DeserializeObject<MirrorDto>(content);
             }
             catch
             {
+                // ignored
             }
 
             if (mirror == null)
@@ -66,9 +66,13 @@ namespace FilmBookmarkService.Core
 
             var mirrorUrl = node.Attributes["href"].Value;
 
-            var httpIndex = mirrorUrl.IndexOf("http://");
+            var httpIndex = mirrorUrl.IndexOf("http://", StringComparison.InvariantCulture);
             if (httpIndex > 0)
-                mirrorUrl = mirrorUrl.Substring(httpIndex);
+                return mirrorUrl.Substring(httpIndex);
+
+            var httpsIndex = mirrorUrl.IndexOf("https://", StringComparison.InvariantCulture);
+            if (httpsIndex > 0)
+                return mirrorUrl.Substring(httpsIndex);
 
             return mirrorUrl;
         }
@@ -156,7 +160,7 @@ namespace FilmBookmarkService.Core
             var name = node.SelectSingleNode("div[@class='Named']").InnerHtml;
 
             var rel = node.GetAttributeValue("rel", "");
-            var mirrorIndexInLink = rel.IndexOf("Mirror=");
+            var mirrorIndexInLink = rel.IndexOf("Mirror=", StringComparison.InvariantCulture);
 
             // prepare link so that we only have to replace the mirror number
             var link = (mirrorIndexInLink < 0)
@@ -166,8 +170,8 @@ namespace FilmBookmarkService.Core
             // get number of mirrors for this hoster
             var mirrorInfo = node.SelectSingleNode("div[@class='Data']/text()[1]").InnerHtml; // e.g.: ": 1/2"
 
-            var separatorIndex = mirrorInfo.IndexOf("/");
-            var count = 0;
+            var separatorIndex = mirrorInfo.IndexOf("/", StringComparison.InvariantCulture);
+            int count;
 
             int.TryParse(mirrorInfo.Substring(separatorIndex + 1), out count);
 
@@ -235,15 +239,14 @@ namespace FilmBookmarkService.Core
             if (!await IsCompatible(url))
                 return string.Empty;
 
-            url = url.Replace("http://www.", "")
-                     .Replace("http://", "");
+            url = _RemoveProtocol(url);
 
             return _PrepareUrl(url).Replace(URL_TEMPLATE, "").Replace(".html", "");
         }
 
         private string _PrepareUrl(string url)
         {
-            foreach (var domain in DOMAINS)
+            foreach (var domain in Domains)
             {
                 url = url.Replace($"{DOMAIN_NAME}.{domain}", BASE_URL);
             }
@@ -251,30 +254,31 @@ namespace FilmBookmarkService.Core
             return url;
         }
 
+        private static string _RemoveProtocol(string url)
+        {
+            return url.Replace("http://www.", "")
+                .Replace("http://", "")
+                .Replace("https://www.", "")
+                .Replace("https://", "");
+        }
+
         private async Task<string> _ExecuteHttpRequest(string filmUrl)
         {
-            try
+            var client = !_useProxy
+            ? new HttpClient()
+            : new HttpClient(new HttpClientHandler
             {
-                var client = !_useProxy
-                ? new HttpClient()
-                : new HttpClient(new HttpClientHandler
-                {
-                    UseProxy = true,
-                    Proxy = new WebProxy(_proxyAddress, false)
-                });
+                UseProxy = true,
+                Proxy = new WebProxy(_proxyAddress, false)
+            });
 
-                var url = _PrepareUrl(filmUrl);
+            var url = _PrepareUrl(filmUrl);
 
-                var response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
+            var response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
 
-                var content = await response.Content.ReadAsStringAsync();
-                return content;
-            }
-            catch (Exception ex)
-            {
-                return string.Empty;
-            }
+            var content = await response.Content.ReadAsStringAsync();
+            return content;
         }
     }
 }
