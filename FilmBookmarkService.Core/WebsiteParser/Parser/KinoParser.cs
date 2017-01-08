@@ -19,7 +19,7 @@ namespace FilmBookmarkService.Core
         private const string GET_URL = "http://" + BASE_URL + "/aGET/Mirror/{0}";
         private const string URL_TEMPLATE = BASE_URL + "/Stream/";
 
-        private static readonly string[] Domains = { "ag", "am", "me", "nu", "pe", "sg", "tv" };
+        private static readonly string[] Domains = { "ag", "am", "me", "nu", "pe", "sg", "to", "tv" };
 
         private readonly bool _useProxy;
         private readonly string _proxyAddress;
