@@ -13,6 +13,14 @@ namespace FilmBookmarkService.Core
 {
     public class KinoParser : IWebsiteParser
     {
+        private const string DOMAIN_NAME = "kino" + "x";
+        private const string BASE_URL = DOMAIN_NAME + ".sg";
+        private const string GET_HOSTER_URL = "http://" + BASE_URL + "/aGET/MirrorByEpisode/?Addr={0}&Season={1}&Episode={2}";
+        private const string GET_URL = "http://" + BASE_URL + "/aGET/Mirror/{0}";
+        private const string URL_TEMPLATE = BASE_URL + "/Stream/";
+
+        private static readonly string[] DOMAINS = {"ag", "am", "me", "nu", "pe", "sg", "tv"};
+
         private readonly bool _useProxy;
         private readonly string _proxyAddress;
 
@@ -21,13 +29,7 @@ namespace FilmBookmarkService.Core
             _useProxy = useProxy;
             _proxyAddress = proxyAddress;
         }
-
-        private const string GET_HOSTER_URL = "http://kino" + "x.tv/aGET/MirrorByEpisode/?Addr={0}&Season={1}&Episode={2}";
-        private const string GET_URL = "http://kino" + "x.tv/aGET/Mirror/{0}";
-        private const string LOCKED_BASE_URL = "kino" + "x.to";
-        private const string BASE_URL = "kino" + "x.tv";
-        private const string URL_TEMPLATE = "kino" + "x.tv/Stream/";
-
+        
         public Task<bool> IsCompatible(string url)
         {
             return Task.Factory.StartNew(() =>
@@ -216,7 +218,7 @@ namespace FilmBookmarkService.Core
 
         private IEnumerable<string> _GetEpisodes(HtmlNode seasonSelectionNode, int season)
         {
-            var optionNode = seasonSelectionNode.SelectSingleNode(string.Format("//option[@value='{0}']", season));
+            var optionNode = seasonSelectionNode.SelectSingleNode($"//option[@value='{season}']");
 
             if (optionNode == null)
                 return new string[0];
@@ -241,26 +243,38 @@ namespace FilmBookmarkService.Core
 
         private string _PrepareUrl(string url)
         {
-            return url.Replace(LOCKED_BASE_URL, BASE_URL);
+            foreach (var domain in DOMAINS)
+            {
+                url = url.Replace($"{DOMAIN_NAME}.{domain}", BASE_URL);
+            }
+
+            return url;
         }
 
         private async Task<string> _ExecuteHttpRequest(string filmUrl)
         {
-            var client = !_useProxy
+            try
+            {
+                var client = !_useProxy
                 ? new HttpClient()
                 : new HttpClient(new HttpClientHandler
                 {
                     UseProxy = true,
                     Proxy = new WebProxy(_proxyAddress, false)
                 });
-            
-            var url = _PrepareUrl(filmUrl);
 
-            var response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
+                var url = _PrepareUrl(filmUrl);
 
-            var content = await response.Content.ReadAsStringAsync();
-            return content;
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                var content = await response.Content.ReadAsStringAsync();
+                return content;
+            }
+            catch (Exception ex)
+            {
+                return string.Empty;
+            }
         }
     }
 }
