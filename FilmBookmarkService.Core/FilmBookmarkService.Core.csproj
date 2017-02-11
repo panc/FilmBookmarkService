@@ -55,6 +55,12 @@
     <Compile Include="DataStore\UserStore.cs" />
     <Compile Include="DataStore\Model\Film.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebsiteParser\CloudFlareUtilities\ChallengeSolution.cs" />
+    <Compile Include="WebsiteParser\CloudFlareUtilities\ClearanceHandler.cs" />
+    <Compile Include="WebsiteParser\CloudFlareUtilities\CloudFlareClearanceException.cs" />
+    <Compile Include="WebsiteParser\CloudFlareUtilities\CloudFlareUtilities.cs" />
+    <Compile Include="WebsiteParser\CloudFlareUtilities\CookieExtensions.cs" />
+    <Compile Include="WebsiteParser\CloudFlareUtilities\HttpMessageHandlerExtensions.cs" />
     <Compile Include="WebsiteParser\Model\MirrorInfo.cs" />
     <Compile Include="WebsiteParser\Model\EpisodeInfo.cs" />
     <Compile Include="WebsiteParser\Parser\IWebsiteParser.cs" />

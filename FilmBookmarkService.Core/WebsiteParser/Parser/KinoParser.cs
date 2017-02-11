@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
+using FilmBookmarkService.Core.CloudFlareUtilities;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 
@@ -264,13 +265,23 @@ namespace FilmBookmarkService.Core
 
         private async Task<string> _ExecuteHttpRequest(string filmUrl)
         {
-            var client = !_useProxy
-            ? new HttpClient()
-            : new HttpClient(new HttpClientHandler
+            //            var client = !_useProxy
+            //            ? new HttpClient()
+            //            : new HttpClient(new HttpClientHandler
+            //            {
+            //                UseProxy = true,
+            //                Proxy = new WebProxy(_proxyAddress, false)
+            //            });
+
+
+            // Create the clearance handler.
+            var handler = new ClearanceHandler
             {
-                UseProxy = true,
-                Proxy = new WebProxy(_proxyAddress, false)
-            });
+                MaxRetries = 2 // Optionally specify the number of retries, if clearance fails (default is 3).
+            };
+
+            // Create a HttpClient that uses the handler to bypass CloudFlare's JavaScript challange.
+            var client = new HttpClient(handler);
 
             var url = _PrepareUrl(filmUrl);
 
